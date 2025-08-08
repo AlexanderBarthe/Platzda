@@ -3,6 +3,9 @@ package com.eva.platzda.models;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "appuser")
 public class User {
@@ -49,5 +52,29 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_flag",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "restaurant_id")
+    )
+    private List<Restaurant> flags = new ArrayList<>();
+
+    public List<Restaurant> getFlags() {
+        return flags;
+    }
+
+    public void setFlags(List<Restaurant> flags) {
+        this.flags = flags;
+    }
+
+    public void addFlag(Restaurant restaurant) {
+        this.flags.add(restaurant);
+    }
+
+    public void removeFlag(Restaurant restaurant) {
+        this.flags.remove(restaurant);
     }
 }

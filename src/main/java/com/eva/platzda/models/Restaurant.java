@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "restaurant")
 public class Restaurant {
@@ -22,7 +25,7 @@ public class Restaurant {
     private User owner;
 
     @Column
-    private int timeSlotDuration;
+    private Integer timeSlotDuration;
 
 
     public Restaurant() {
@@ -59,11 +62,37 @@ public class Restaurant {
         this.owner = owner;
     }
 
-    public int getTimeSlotDuration() {
+    public Integer getTimeSlotDuration() {
         return timeSlotDuration;
     }
 
-    public void setTimeSlotDuration(int timeSlotDuration) {
+    public void setTimeSlotDuration(Integer timeSlotDuration) {
         this.timeSlotDuration = timeSlotDuration;
     }
+
+    @ElementCollection
+    @CollectionTable(
+            name = "restaurant_tags",
+            joinColumns = @JoinColumn(name = "restaurant_id")
+    )
+    @Column(name = "tag")
+    private List<String> tags = new ArrayList<>();
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+    public void addTag(String tag) {
+        this.tags.add(tag);
+    }
+
+    public void removeTag(String tag) {
+        this.tags.remove(tag);
+    }
+
+
 }
