@@ -1,8 +1,8 @@
-package com.eva.platzda.controllers;
+package eva.platzda.backend.controllers;
 
-import com.eva.platzda.models.Restaurant;
-import com.eva.platzda.models.User;
-import com.eva.platzda.services.UserService;
+import eva.platzda.backend.models.Restaurant;
+import eva.platzda.backend.models.User;
+import eva.platzda.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +10,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
-@RestController("/user")
+@RestController
+@RequestMapping("/users")
 public class UserController {
 
     private UserService userService;

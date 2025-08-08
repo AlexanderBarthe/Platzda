@@ -1,4 +1,4 @@
-package com.eva.platzda.models;
+package eva.platzda.backend.models;
 
 
 import jakarta.persistence.*;

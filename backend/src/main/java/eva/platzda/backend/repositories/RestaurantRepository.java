@@ -1,6 +1,6 @@
-package com.eva.platzda.repositories;
+package eva.platzda.backend.repositories;
 
-import com.eva.platzda.models.Restaurant;
+import eva.platzda.backend.models.Restaurant;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {

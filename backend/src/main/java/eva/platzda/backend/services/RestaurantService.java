@@ -1,7 +1,7 @@
-package com.eva.platzda.services;
+package eva.platzda.backend.services;
 
-import com.eva.platzda.models.Restaurant;
-import com.eva.platzda.repositories.RestaurantRepository;
+import eva.platzda.backend.models.Restaurant;
+import eva.platzda.backend.repositories.RestaurantRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

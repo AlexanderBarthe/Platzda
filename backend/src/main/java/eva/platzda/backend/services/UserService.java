@@ -1,8 +1,8 @@
-package com.eva.platzda.services;
+package eva.platzda.backend.services;
 
-import com.eva.platzda.models.Restaurant;
-import com.eva.platzda.models.User;
-import com.eva.platzda.repositories.UserRepository;
+import eva.platzda.backend.models.Restaurant;
+import eva.platzda.backend.models.User;
+import eva.platzda.backend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
