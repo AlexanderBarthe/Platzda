@@ -2,14 +2,15 @@ package eva.platzda.backend.controllers;
 
 import eva.platzda.backend.dtos.RestaurantDto;
 import eva.platzda.backend.dtos.TagRequest;
+import eva.platzda.backend.error_handling.NotFoundException;
 import eva.platzda.backend.models.Restaurant;
 import eva.platzda.backend.models.User;
 import eva.platzda.backend.services.RestaurantService;
 import eva.platzda.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,26 +29,26 @@ public class RestaurantController {
     }
 
     @GetMapping
-    public List<RestaurantDto> getRestaurants() {
-        return restaurantService
+    public ResponseEntity<List<RestaurantDto>> getRestaurants() {
+        return ResponseEntity.ok(restaurantService
                 .findAllRestaurants().stream()
                 .map(RestaurantDto::toDto)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
     }
 
     @GetMapping("/{id}")
-    public RestaurantDto getRestaurant(@PathVariable Long id) {
+    public ResponseEntity<RestaurantDto> getRestaurant(@PathVariable Long id) {
         Restaurant restaurant = restaurantService.findById(id);
 
         if(restaurant == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found");
+            throw new NotFoundException("Restaurant wit id " + id + " does not exist");
         }
 
-        return RestaurantDto.toDto(restaurant);
+        return ResponseEntity.ok(RestaurantDto.toDto(restaurant));
     }
 
     @PostMapping("/{ownerId}")
-    public RestaurantDto createRestaurant(@PathVariable Long ownerId, @RequestBody Restaurant restaurant) {
+    public ResponseEntity<RestaurantDto> createRestaurant(@PathVariable Long ownerId, @RequestBody Restaurant restaurant) {
         restaurant.setId(null);
         if(restaurant.getAddress() == null) restaurant.setAddress("");
         if(restaurant.getTimeSlotDuration() == null) restaurant.setTimeSlotDuration(90);
@@ -55,35 +56,36 @@ public class RestaurantController {
 
         User owner = userService.findById(ownerId);
         if(owner == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User not found");
+            throw new NotFoundException("User wit id " + ownerId + " does not exist");
         }
         else {
             restaurant.setOwner(owner);
         }
 
         Restaurant r = restaurantService.createRestaurant(restaurant);
-        return RestaurantDto.toDto(r);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(RestaurantDto.toDto(r));
     }
 
     @PutMapping("/{restaurantId}/owner/{ownerId}")
-    public RestaurantDto updateOwner(@PathVariable Long restaurantId, @PathVariable Long ownerId) {
+    public ResponseEntity<RestaurantDto> updateOwner(@PathVariable Long restaurantId, @PathVariable Long ownerId) {
 
         Restaurant restaurant = restaurantService.findById(restaurantId);
-        if(restaurant == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found");
+        if(restaurant == null) throw new NotFoundException("Restaurant wit id " + restaurantId + " does not exist");
 
         User newOwner = userService.findById(ownerId);
-        if(newOwner == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        if(newOwner == null) throw new NotFoundException("User wit id " + ownerId + " does not exist");
 
         restaurant.setOwner(newOwner);
 
         Restaurant r = restaurantService.updateRestaurant(restaurant);
-        return RestaurantDto.toDto(r);
+        return ResponseEntity.ok(RestaurantDto.toDto(r));
     }
 
-    @PutMapping("/{restaurantId}")
-    public RestaurantDto updateRestaurant(@PathVariable Long restaurantId, @RequestBody Restaurant restaurant) {
-        Restaurant oldRestaurant = restaurantService.findById(restaurantId);
-        if(oldRestaurant == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found");
+    @PutMapping()
+    public ResponseEntity<RestaurantDto> updateRestaurant(@RequestBody Restaurant restaurant) {
+        Restaurant oldRestaurant = restaurantService.findById(restaurant.getId());
+        if(oldRestaurant == null) throw new NotFoundException("Restaurant wit id " + restaurant.getId() + " does not exist");
 
         if(restaurant.getAddress() == null) restaurant.setAddress(oldRestaurant.getAddress());
         if(restaurant.getTimeSlotDuration() == null) restaurant.setTimeSlotDuration(oldRestaurant.getTimeSlotDuration());
@@ -91,40 +93,42 @@ public class RestaurantController {
         restaurant.setOwner(oldRestaurant.getOwner());
 
         Restaurant r = restaurantService.updateRestaurant(restaurant);
-        return RestaurantDto.toDto(r);
+        return ResponseEntity.ok(RestaurantDto.toDto(r));
     }
 
     @DeleteMapping("/{restaurantId}")
-    public void deleteRestaurant(@PathVariable Long restaurantId) {
-        if(restaurantService.findById(restaurantId) == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found");
+    public ResponseEntity<Void> deleteRestaurant(@PathVariable Long restaurantId) {
+        if(restaurantService.findById(restaurantId) == null) return ResponseEntity.noContent().build();
         restaurantService.deleteRestaurantById(restaurantId);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping
-    public void deleteAllRestaurants() {
+    public ResponseEntity<Void> deleteAllRestaurants() {
         restaurantService.deleteAllRestaurants();
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("{restaurantId}/tag")
-    public RestaurantDto addTag(@PathVariable Long restaurantId, @RequestBody TagRequest request) {
+    public ResponseEntity<RestaurantDto> addTag(@PathVariable Long restaurantId, @RequestBody TagRequest request) {
         Restaurant restaurant = restaurantService.findById(restaurantId);
-        if(restaurant == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found");
+        if(restaurant == null) throw new NotFoundException("Restaurant wit id " + restaurantId + " does not exist");
 
         restaurant.addTag(request.getTag());
         Restaurant r = restaurantService.updateRestaurant(restaurant);
 
-        return RestaurantDto.toDto(r);
+        return ResponseEntity.ok(RestaurantDto.toDto(r));
     }
 
     @PutMapping("{restaurantId}/untag")
-    public RestaurantDto deleteTag(@PathVariable Long restaurantId, @RequestBody TagRequest request) {
+    public ResponseEntity<RestaurantDto> deleteTag(@PathVariable Long restaurantId, @RequestBody TagRequest request) {
         Restaurant restaurant = restaurantService.findById(restaurantId);
-        if(restaurant == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found");
+        if(restaurant == null) throw new NotFoundException("Restaurant wit id " + restaurantId + " does not exist");
 
         restaurant.removeTag(request.getTag());
         Restaurant r = restaurantService.updateRestaurant(restaurant);
 
-        return RestaurantDto.toDto(r);
+        return ResponseEntity.ok(RestaurantDto.toDto(r));
     }
 
 }

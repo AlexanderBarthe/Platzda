@@ -3,7 +3,6 @@ package eva.platzda.cli.commands;
 import eva.platzda.cli.commands.execution.CommandExecutor;
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.commands.rest_sub.*;
-import eva.platzda.cli.commands.user_sub.*;
 
 import java.util.List;
 

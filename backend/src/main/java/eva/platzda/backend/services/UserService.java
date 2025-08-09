@@ -1,12 +1,11 @@
 package eva.platzda.backend.services;
 
+import eva.platzda.backend.error_handling.NotFoundException;
 import eva.platzda.backend.models.Restaurant;
 import eva.platzda.backend.models.User;
 import eva.platzda.backend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -41,7 +40,7 @@ public class UserService {
 
     public void deleteById(Long id) {
         if(!userRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+            throw new NotFoundException("User wit id " + id + " not found");
         }
         userRepository.deleteById(id);
     }
@@ -60,10 +59,10 @@ public class UserService {
         Restaurant restaurant = restaurantService.findById(restaurantId);
 
         if(user == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+            throw new NotFoundException("User wit id " + userId + " not found");
         }
         if(restaurant == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found");
+            throw new NotFoundException("Restaurant wit id " + restaurantId + " not found");
         }
 
         user.addFlag(restaurant);
@@ -77,10 +76,10 @@ public class UserService {
         Restaurant restaurant = restaurantService.findById(restaurantId);
 
         if(user == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+            throw new NotFoundException("User wit id " + userId + " not found");
         }
         if(restaurant == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found");
+            throw new NotFoundException("Restaurant wit id " + restaurantId + " not found");
         }
 
         user.removeFlag(restaurant);

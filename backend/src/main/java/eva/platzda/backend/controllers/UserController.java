@@ -1,13 +1,14 @@
 package eva.platzda.backend.controllers;
 
 import eva.platzda.backend.dtos.UserDto;
+import eva.platzda.backend.error_handling.NotFoundException;
 import eva.platzda.backend.models.Restaurant;
 import eva.platzda.backend.models.User;
 import eva.platzda.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,71 +25,78 @@ public class UserController {
     }
 
     @GetMapping()
-    public List<UserDto> findAll() {
-        return userService.findAll()
+    public ResponseEntity<List<UserDto>> findAll() {
+        return ResponseEntity.ok(userService.findAll()
                 .stream()
                 .map(UserDto::toDto)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
     }
 
     @GetMapping("/{id}")
-    public UserDto findById(@PathVariable Long id) {
+    public ResponseEntity<UserDto> findById(@PathVariable Long id) {
         User user = userService.findById(id);
 
         if(user == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+            throw new NotFoundException("User wit id " + id + " does not exist");
         }
-        return UserDto.toDto(user);
+        return ResponseEntity.ok(UserDto.toDto(user));
     }
 
     @PostMapping
-    public UserDto create(@RequestBody User user) {
+    public ResponseEntity<UserDto> create(@RequestBody User user) {
         user.setId(null);
         User u = userService.saveUser(user);
 
-        return UserDto.toDto(u);
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserDto.toDto(u));
     }
 
     @PutMapping
-    public UserDto update(@RequestBody User user) {
+    public ResponseEntity<UserDto> update(@RequestBody User user) {
         User oldUser = userService.findById(user.getId());
-        if(oldUser == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        if(oldUser == null) throw new NotFoundException("User wit id " + user.getId() + " does not exist");
 
         if(user.getName() == null) user.setName(oldUser.getName());
         if(user.getEmail() == null) user.setEmail(oldUser.getEmail());
         if(user.getFlags() == null) user.setFlags(oldUser.getFlags());
 
         User u = userService.saveUser(user);
-        return UserDto.toDto(u);
+        return ResponseEntity.ok(UserDto.toDto(u));
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         if(userService.findById(id) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+            return ResponseEntity.noContent().build();
         }
         userService.deleteById(id);
+        
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping
-    public void deleteAll() {
+    public ResponseEntity<Void> deleteAll() {
         userService.deleteAll();
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/flags/{userId}")
-    public List<Restaurant> flagsOfUser(@PathVariable Long userId) {
-        return userService.getFlagsOfUser(userId);
+    public ResponseEntity<List<Long>> flagsOfUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getFlagsOfUser(userId)
+                        .stream()
+                        .map(r -> r.getId())
+                        .collect(Collectors.toList()));
     }
 
     @PutMapping("/flags/{userId}/{restaurantId}")
-    public UserDto addFlagToUser(@PathVariable Long userId, @PathVariable Long restaurantId) {
+    public ResponseEntity<UserDto> addFlagToUser(@PathVariable Long userId, @PathVariable Long restaurantId) {
         User u = userService.addFlag(userId, restaurantId);
-        return UserDto.toDto(u);
+        return ResponseEntity.ok(UserDto.toDto(u));
     }
 
     @DeleteMapping("/flags/{userId}/{restaurantId}")
-    public void deleteFlagFromUser(@PathVariable Long userId, @PathVariable Long restaurantId) {
+    public ResponseEntity<Void> deleteFlagFromUser(@PathVariable Long userId, @PathVariable Long restaurantId) {
         userService.removeFlag(userId, restaurantId);
+        return ResponseEntity.ok().build();
     }
 
 }

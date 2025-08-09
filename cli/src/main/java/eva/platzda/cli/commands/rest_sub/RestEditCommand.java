@@ -43,7 +43,7 @@ public class RestEditCommand implements ConsoleCommand {
                 "\"" + key + "\":\"" + value + "\"\n" +
                 "}";
 
-        return RestClient.sendRequest("restaurants/" + restaurant_id, HttpMethod.PUT, json);
+        return RestClient.sendRequest("restaurants", HttpMethod.PUT, json);
 
     }
 }

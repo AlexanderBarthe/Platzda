@@ -2,7 +2,6 @@ package eva.platzda.cli.commands;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
