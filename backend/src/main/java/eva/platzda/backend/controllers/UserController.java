@@ -2,7 +2,6 @@ package eva.platzda.backend.controllers;
 
 import eva.platzda.backend.dtos.UserDto;
 import eva.platzda.backend.error_handling.NotFoundException;
-import eva.platzda.backend.models.Restaurant;
 import eva.platzda.backend.models.User;
 import eva.platzda.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
