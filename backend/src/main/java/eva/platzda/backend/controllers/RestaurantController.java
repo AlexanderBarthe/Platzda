@@ -76,6 +76,7 @@ public class RestaurantController {
         if(restaurant.getAddress() == null) restaurant.setAddress(oldRestaurant.getAddress());
         if(restaurant.getTimeSlotDuration() == null) restaurant.setTimeSlotDuration(oldRestaurant.getTimeSlotDuration());
         if(restaurant.getTags() == null) restaurant.setTags(oldRestaurant.getTags());
+        restaurant.setOwner(oldRestaurant.getOwner());
 
         restaurantService.updateRestaurant(restaurant);
     }

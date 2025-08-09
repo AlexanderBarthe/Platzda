@@ -37,17 +37,21 @@ public class UserController {
     }
 
     @PostMapping
-    public void create(@RequestBody User user) {
+    public User create(@RequestBody User user) {
         user.setId(null);
-        userService.saveUser(user);
+        return userService.saveUser(user);
     }
 
     @PutMapping
-    public void update(@RequestBody User user) {
-        if(userService.findById(user.getId()) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
-        }
-        userService.saveUser(user);
+    public User update(@RequestBody User user) {
+        User oldUser = userService.findById(user.getId());
+        if(oldUser == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+
+        if(user.getName() == null) user.setName(oldUser.getName());
+        if(user.getEmail() == null) user.setEmail(oldUser.getEmail());
+        if(user.getFlags() == null) user.setFlags(oldUser.getFlags());
+
+        return userService.saveUser(user);
     }
 
     @DeleteMapping("/{id}")
@@ -56,6 +60,11 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
         userService.deleteById(id);
+    }
+
+    @DeleteMapping
+    public void deleteAll() {
+        userService.deleteAll();
     }
 
     @GetMapping("/flags/{userId}")

@@ -33,12 +33,16 @@ public class UserService {
         return userRepository.findByName(username);
     }
 
-    public void saveUser(User user) {
-        userRepository.save(user);
+    public User saveUser(User user) {
+        return userRepository.save(user);
     }
 
     public void deleteById(Long id) {
         userRepository.deleteById(id);
+    }
+
+    public void deleteAll() {
+        userRepository.deleteAll();
     }
 
     public List<Restaurant> getFlagsOfUser(Long userId) {
