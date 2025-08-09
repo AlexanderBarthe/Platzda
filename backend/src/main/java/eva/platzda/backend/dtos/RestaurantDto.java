@@ -1,0 +1,86 @@
+package eva.platzda.backend.dtos;
+
+import eva.platzda.backend.models.Restaurant;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class RestaurantDto {
+    private Long id;
+    private String address;
+    private Long owner;
+    private Integer timeSlotDuration;
+    private List<String> tags;
+
+    public RestaurantDto() {
+    }
+
+    public RestaurantDto(Long id, String address, Long ownerId, Integer timeSlotDuration, List<String> tags) {
+        this.id = id;
+        this.address = address;
+        this.owner = ownerId;
+        this.timeSlotDuration = timeSlotDuration;
+        this.tags = tags;
+    }
+
+    public static RestaurantDto toDto(Restaurant r) {
+        if (r == null) return null;
+
+        Long ownerId = (r.getOwner() == null) ? null : r.getOwner().getId();
+
+        // defensive copy der tags
+        List<String> tags = r.getTags() == null ? Collections.emptyList() :
+                r.getTags().stream().collect(Collectors.toList());
+
+        return new RestaurantDto(
+                r.getId(),
+                r.getAddress(),
+                ownerId,
+                r.getTimeSlotDuration(),
+                tags
+        );
+    }
+
+    // Getter / Setter
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public Long getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Long owner) {
+        this.owner = owner;
+    }
+
+    public Integer getTimeSlotDuration() {
+        return timeSlotDuration;
+    }
+
+    public void setTimeSlotDuration(Integer timeSlotDuration) {
+        this.timeSlotDuration = timeSlotDuration;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+}

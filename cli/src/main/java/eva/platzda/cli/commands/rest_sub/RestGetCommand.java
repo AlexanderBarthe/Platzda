@@ -7,11 +7,20 @@ import eva.platzda.cli.rest_api.RestClient;
 public class RestGetCommand implements ConsoleCommand {
     @Override
     public String command() {
-        return "list";
+        return "get";
     }
 
     @Override
     public String executeCommand(String[] args) {
-        return RestClient.sendRequest("restaurants", HttpMethod.GET, null);
+        if(args.length == 0){
+            return "Not enough arguments provided. See 'help rest' for more information.";
+        }
+
+        try {
+            long id = Long.parseLong(args[0]);
+            return RestClient.sendRequest("restaurants/" + id, HttpMethod.GET, null);
+        } catch (NumberFormatException e) {
+            return "Please enter a valid restaurant ID.";
+        }
     }
 }

@@ -7,11 +7,11 @@ import eva.platzda.cli.rest_api.RestClient;
 public class RestDropCommand implements ConsoleCommand {
     @Override
     public String command() {
-        return "list";
+        return "drop";
     }
 
     @Override
     public String executeCommand(String[] args) {
-        return RestClient.sendRequest("restaurants", HttpMethod.GET, null);
+        return RestClient.sendRequest("restaurants", HttpMethod.DELETE, null);
     }
 }

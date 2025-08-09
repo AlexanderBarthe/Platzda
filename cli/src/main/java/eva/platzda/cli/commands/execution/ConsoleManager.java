@@ -2,6 +2,7 @@ package eva.platzda.cli.commands.execution;
 
 import eva.platzda.cli.commands.ExitCommand;
 import eva.platzda.cli.commands.HelpCommand;
+import eva.platzda.cli.commands.RestCommand;
 import eva.platzda.cli.commands.UserCommand;
 
 import java.util.List;
@@ -13,7 +14,8 @@ public class ConsoleManager extends CommandExecutor {
         super(List.of(
                 new HelpCommand(),
                 new ExitCommand(),
-                new UserCommand()
+                new UserCommand(),
+                new RestCommand()
         ));
     }
 
@@ -34,6 +36,12 @@ public class ConsoleManager extends CommandExecutor {
             }
 
             System.out.println(answer);
+
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
 
     }

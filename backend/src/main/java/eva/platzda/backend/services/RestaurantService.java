@@ -23,17 +23,20 @@ public class RestaurantService {
         return restaurantRepository.findById(id).orElse(null);
     }
 
-    public void createRestaurant(Restaurant restaurant) {
-        restaurantRepository.save(restaurant);
+    public Restaurant createRestaurant(Restaurant restaurant) {
+        return restaurantRepository.save(restaurant);
     }
 
-    public void updateRestaurant(Restaurant restaurant) {
-        restaurantRepository.save(restaurant);
+    public Restaurant updateRestaurant(Restaurant restaurant) {
+        return restaurantRepository.save(restaurant);
     }
 
     public void deleteRestaurantById(Long id) {
         restaurantRepository.deleteById(id);
     }
 
+    public void deleteAllRestaurants() {
+        restaurantRepository.deleteAll();
+    }
 
 }

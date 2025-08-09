@@ -4,7 +4,9 @@ import eva.platzda.backend.models.Restaurant;
 import eva.platzda.backend.models.User;
 import eva.platzda.backend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -38,6 +40,9 @@ public class UserService {
     }
 
     public void deleteById(Long id) {
+        if(!userRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
         userRepository.deleteById(id);
     }
 
@@ -49,13 +54,21 @@ public class UserService {
         return findById(userId).getFlags();
     }
 
-    public void addFlag(Long userId, Long restaurantId) {
+    public User addFlag(Long userId, Long restaurantId) {
 
         User user = findById(userId);
         Restaurant restaurant = restaurantService.findById(restaurantId);
 
+        if(user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        if(restaurant == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found");
+        }
+
         user.addFlag(restaurant);
 
+        return userRepository.save(user);
     }
 
     public void removeFlag(Long userId, Long restaurantId) {
@@ -63,7 +76,16 @@ public class UserService {
         User user = findById(userId);
         Restaurant restaurant = restaurantService.findById(restaurantId);
 
+        if(user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        if(restaurant == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found");
+        }
+
         user.removeFlag(restaurant);
+
+        userRepository.save(user);
     }
 
 

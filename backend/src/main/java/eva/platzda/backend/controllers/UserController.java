@@ -1,5 +1,6 @@
 package eva.platzda.backend.controllers;
 
+import eva.platzda.backend.dtos.UserDto;
 import eva.platzda.backend.models.Restaurant;
 import eva.platzda.backend.models.User;
 import eva.platzda.backend.services.UserService;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -17,33 +19,38 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    public void setUserService(UserService userService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
     @GetMapping()
-    public List<User> findAll() {
-        return userService.findAll();
+    public List<UserDto> findAll() {
+        return userService.findAll()
+                .stream()
+                .map(UserDto::toDto)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public User findById(@PathVariable Long id) {
+    public UserDto findById(@PathVariable Long id) {
         User user = userService.findById(id);
 
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
-        return user;
+        return UserDto.toDto(user);
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
+    public UserDto create(@RequestBody User user) {
         user.setId(null);
-        return userService.saveUser(user);
+        User u = userService.saveUser(user);
+
+        return UserDto.toDto(u);
     }
 
     @PutMapping
-    public User update(@RequestBody User user) {
+    public UserDto update(@RequestBody User user) {
         User oldUser = userService.findById(user.getId());
         if(oldUser == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
 
@@ -51,7 +58,8 @@ public class UserController {
         if(user.getEmail() == null) user.setEmail(oldUser.getEmail());
         if(user.getFlags() == null) user.setFlags(oldUser.getFlags());
 
-        return userService.saveUser(user);
+        User u = userService.saveUser(user);
+        return UserDto.toDto(u);
     }
 
     @DeleteMapping("/{id}")
@@ -72,9 +80,10 @@ public class UserController {
         return userService.getFlagsOfUser(userId);
     }
 
-    @PostMapping("/flags/{userId}/{restaurantId}")
-    public void addFlagToUser(@PathVariable Long userId, @PathVariable Long restaurantId) {
-        userService.addFlag(userId, restaurantId);
+    @PutMapping("/flags/{userId}/{restaurantId}")
+    public UserDto addFlagToUser(@PathVariable Long userId, @PathVariable Long restaurantId) {
+        User u = userService.addFlag(userId, restaurantId);
+        return UserDto.toDto(u);
     }
 
     @DeleteMapping("/flags/{userId}/{restaurantId}")

@@ -18,7 +18,7 @@ public class UserEditCommand implements ConsoleCommand {
             return "Not enough arguments provided. See 'help user' for more information.";
         }
 
-        Long id;
+        long id;
         try {
             id = Long.parseLong(args[0]);
         } catch (NumberFormatException e) {

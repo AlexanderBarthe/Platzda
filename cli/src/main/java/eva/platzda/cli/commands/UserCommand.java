@@ -15,7 +15,9 @@ public class UserCommand extends CommandExecutor implements ConsoleCommand {
                 new UserGetCommand(),
                 new UserEditCommand(),
                 new UserDeleteCommand(),
-                new UserDropCommand()
+                new UserDropCommand(),
+                new UserFlagCommand(),
+                new UserUnflagCommand()
         ));
     }
 
