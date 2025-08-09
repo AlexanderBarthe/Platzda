@@ -1,10 +1,13 @@
-package eva.platzda.backend.dtos;
+package eva.platzda.backend.core.dtos;
 
-import eva.platzda.backend.models.Restaurant;
-import eva.platzda.backend.models.User;
+import eva.platzda.backend.core.models.Restaurant;
+import eva.platzda.backend.core.models.User;
 
 import java.util.List;
 
+/**
+ * Dto for wrapping Restaurants as their ids
+ */
 public class UserDto {
     private Long id;
     private String name;

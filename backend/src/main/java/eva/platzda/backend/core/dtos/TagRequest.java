@@ -1,5 +1,8 @@
-package eva.platzda.backend.dtos;
+package eva.platzda.backend.core.dtos;
 
+/**
+ * Simple dto for tag creation and deletion
+ */
 public class TagRequest {
 
     private String tag;

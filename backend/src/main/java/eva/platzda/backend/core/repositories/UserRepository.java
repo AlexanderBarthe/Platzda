@@ -1,6 +1,6 @@
-package eva.platzda.backend.repositories;
+package eva.platzda.backend.core.repositories;
 
-import eva.platzda.backend.models.User;
+import eva.platzda.backend.core.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Long> {
