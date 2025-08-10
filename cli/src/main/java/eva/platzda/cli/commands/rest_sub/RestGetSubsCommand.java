@@ -1,29 +1,24 @@
-package eva.platzda.cli.commands;
+package eva.platzda.cli.commands.rest_sub;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.websockets.WebSocketManager;
 
-public class ExitCommand implements ConsoleCommand {
+public class RestGetSubsCommand implements ConsoleCommand {
 
     private WebSocketManager webSocketManager;
 
-    public ExitCommand(WebSocketManager webSocketManager) {
+    public RestGetSubsCommand(WebSocketManager webSocketManager) {
         this.webSocketManager = webSocketManager;
     }
 
     @Override
     public String command() {
-        return "exit";
+        return "get-subs";
     }
 
     @Override
     public String executeCommand(String[] args) {
-
-        webSocketManager.disconnect();
-
-        System.out.println("Goodbye!");
-        System.exit(0);
-        return null;
-
+        webSocketManager.sendMessage("get");
+        return "List of subscribed restaurant ids:";
     }
 }

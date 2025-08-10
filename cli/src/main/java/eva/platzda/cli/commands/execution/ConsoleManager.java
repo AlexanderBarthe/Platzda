@@ -4,18 +4,19 @@ import eva.platzda.cli.commands.ExitCommand;
 import eva.platzda.cli.commands.HelpCommand;
 import eva.platzda.cli.commands.RestCommand;
 import eva.platzda.cli.commands.UserCommand;
+import eva.platzda.cli.websockets.WebSocketManager;
 
 import java.util.List;
 import java.util.Scanner;
 
 public class ConsoleManager extends CommandExecutor {
 
-    public ConsoleManager() {
+    public ConsoleManager(WebSocketManager webSocketManager) {
         super(List.of(
                 new HelpCommand(),
-                new ExitCommand(),
+                new ExitCommand(webSocketManager),
                 new UserCommand(),
-                new RestCommand()
+                new RestCommand(webSocketManager)
         ));
     }
 
