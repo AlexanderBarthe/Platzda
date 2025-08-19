@@ -21,6 +21,8 @@ public class HelpCommand implements ConsoleCommand {
             manualDescriptions.put("exit", "Close this CLI");
             manualDescriptions.put("user", "Commands for user management");
             manualDescriptions.put("rest", "Commands for restaurants management");
+            manualDescriptions.put("run", "Runs other commands multiple times");
+            manualDescriptions.put("time", "Use to track runtime of the specified command");
             return "## List of commands ##\n\n" + formatManuals(manualDescriptions);
         }
 
@@ -51,6 +53,17 @@ public class HelpCommand implements ConsoleCommand {
                 manualDescriptions.put("sub <restaurant_id>", "Subscribes to updates of tables of a restaurant");
                 manualDescriptions.put("unsub <restaurant_id>", "Unsubscribes from updates of tables of a restaurant");
                 return "## List of subcommands for 'rest' ##\n\n" + formatManuals(manualDescriptions);
+            }
+            case "run" -> {
+                return """
+                        ## Run Command ##
+                        Ussage: run <amount> <multithreaded> <command>
+                        Explanation: Runs a command multiple times.
+                        For multithreading use 1, true or p for no multithreading user 0, false or r
+                        The command is formatted like the single-ran commands.
+                        You can use the iteration count in arguments with placeholder expressions, which can be mathematically formatted
+                        Example: 'run 100 0 user create [x];[(x+1)%2]@mail.com' creates a user with the names from 0 to 99 and the email with the reversed parity of the name.
+                        Using placeholder expressions might increase runtime of the command.""";
             }
             default -> {
                 return "No help page available for '" + args[0] + "'";

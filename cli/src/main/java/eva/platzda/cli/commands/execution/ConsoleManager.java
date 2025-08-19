@@ -13,7 +13,8 @@ public class ConsoleManager extends CommandExecutor {
                 new ExitCommand(webSocketManager),
                 new UserCommand(),
                 new RestCommand(webSocketManager),
-                new RunCommand(webSocketManager)
+                new RunCommand(webSocketManager),
+                new TimeCommand(webSocketManager)
         );
     }
 

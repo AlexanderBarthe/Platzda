@@ -164,16 +164,12 @@ public class RunCommand implements ConsoleCommand {
         while (m.find()) {
             String expr = m.group(1);
             // get parsed RPN from cache or parse and put
-            List<String> rpn = RPN_CACHE.computeIfAbsent(expr, e -> ExpressionEvaluator.parseToRPN(e));
+            List<String> rpn = RPN_CACHE.computeIfAbsent(expr, ExpressionEvaluator::parseToRPN);
             long val = ExpressionEvaluator.evalRPNWithX(rpn, xValue);
             m.appendReplacement(sb, Matcher.quoteReplacement(Long.toString(val)));
         }
         m.appendTail(sb);
         return sb.toString();
     }
-
-
-
-
 
 }
