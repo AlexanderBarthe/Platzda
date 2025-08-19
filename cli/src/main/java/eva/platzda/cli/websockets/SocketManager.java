@@ -9,6 +9,11 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SocketManager {
 
@@ -19,6 +24,8 @@ public class SocketManager {
     private PrintWriter writer;
     private BufferedReader reader;
     private Thread readerThread;
+
+    private final Map<SocketMessageListener, Long> listeners = new HashMap();
 
     public SocketManager() {
         try {
@@ -45,15 +52,32 @@ public class SocketManager {
                 try {
                     String line;
                     while (!socket.isClosed() && (line = reader.readLine()) != null) {
-                        System.out.println(line);
+                        String[] split = line.split(";");
+                        String refactoredMessage = String.join(";", Arrays.copyOfRange(split, 1, split.length));
+
+                        Long requestId = null;
+                        try { requestId = Long.parseLong(split[0]); } catch (NumberFormatException ignored) {};
+                        if(requestId == null) requestId = 0L;
+
+                        for (Map.Entry<SocketMessageListener, Long> entry : listeners.entrySet()) {
+                            if(requestId.equals(entry.getValue())) {
+                                try {entry.getKey().notify(refactoredMessage);} catch (Exception ignored) {}
+                            }
+                        }
                     }
                 } catch (IOException e) {
                     System.out.println("Error: " + e.getMessage());
                 } finally {
                     String reason = (socket == null || socket.isClosed()) ? "Socket closed" : "Stream ended";
                     System.out.println("Connection closed. Reason: " + reason);
+
+                    for (SocketMessageListener l : listeners.keySet()) {
+                        try {
+                            l.notify("__CONNECTION_CLOSED__");
+                        } catch (Exception ignored) {}
+                    }
                 }
-            }, "WebSocketManager-Reader");
+            }, "SocketManager-Reader");
 
             readerThread.setDaemon(true);
             readerThread.start();
@@ -90,6 +114,15 @@ public class SocketManager {
 
     public boolean isConnected() {
         return socket != null && socket.isConnected() && !socket.isClosed();
+    }
+
+
+    public void subscribe(long id, SocketMessageListener listener) {
+        if(listener != null) listeners.put(listener, id);
+    }
+
+    public void unsubscribe(SocketMessageListener listener) {
+        if(listener != null) listeners.remove(listener);
     }
 
 }

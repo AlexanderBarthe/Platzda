@@ -116,7 +116,7 @@ public class TableUpdateSocketHandler implements InitializingBean, DisposableBea
                 } catch (Exception e) {
                     logger.warn("Error handling message from {}: {}", conn.getRemoteAddress(), e.getMessage(), e);
                     try {
-                        sendError(conn, "Server error: " + e.getMessage());
+                        sendError(-1L, conn, "Server error: " + e.getMessage());
                     } catch (IOException ignored) {}
                 }
             }
@@ -138,48 +138,52 @@ public class TableUpdateSocketHandler implements InitializingBean, DisposableBea
                 .filter(s -> !s.isEmpty())
                 .toArray(String[]::new);
 
-        if (args.length == 0 || (args.length <= 1 && !args[0].equals(CMD_GET))) {
-            sendError(conn, "Insufficient arguments");
+        Long requestId = null;
+        try {requestId = Long.parseLong(args[0]);} catch (Exception ignored) {}
+        if(requestId == null) return;
+
+        if (args.length == 1 || (args.length == 2 && !args[1].equals(CMD_GET))) {
+            sendError(requestId, conn, "Insufficient arguments");
             logger.warn("Invalid message from {}: Insufficient arguments", conn.getRemoteAddress());
             return;
-        } else if (args.length == 1 && args[0].equals(CMD_GET)) {
+        } else if (args.length == 2) {
             //find all ids to which this connection is subscribed
             String ids = subscriptions.entrySet().stream()
                     .filter(entry -> entry.getValue().contains(conn))
                     .map(entry -> entry.getKey().toString())
                     .collect(Collectors.joining(","));
-            sendPlainMessage(conn, ids);
+            sendPlainMessage(requestId, conn, ids);
             return;
         }
 
         long id;
         try {
-            id = Long.parseLong(args[1]);
+            id = Long.parseLong(args[2]);
         } catch (Exception ex) {
-            sendError(conn, "Invalid Id: " + args[1]);
-            logger.warn("Invalid ID from {}: {}", conn.getRemoteAddress(), args[1]);
+            sendError(requestId, conn, "Invalid Id: " + args[2]);
+            logger.warn("Invalid ID from {}: {}", conn.getRemoteAddress(), args[2]);
             return;
         }
         if (restaurantService.findById(id) == null) {
-            sendError(conn, "Restaurant not found with id: " + args[1]);
-            logger.warn("Unknown ID from {}: {}", conn.getRemoteAddress(), args[1]);
+            sendError(requestId, conn, "Restaurant not found with id: " + args[2]);
+            logger.warn("Unknown ID from {}: {}", conn.getRemoteAddress(), args[2]);
             return;
         }
 
-        switch (args[0]) {
+        switch (args[1]) {
             case CMD_SUBSCRIBE -> {
                 subscriptions.computeIfAbsent(id, k -> ConcurrentHashMap.newKeySet()).add(conn);
-                sendSuccess(conn, "Subscribed to restaurant with id " + id);
+                sendSuccess(requestId, conn, "Subscribed to restaurant with id " + id);
                 logger.info("Session {} subscribed to restaurant {}", conn.getRemoteAddress(), id);
             }
             case CMD_UNSUBSCRIBE -> {
                 subscriptions.computeIfAbsent(id, k -> ConcurrentHashMap.newKeySet()).remove(conn);
-                sendSuccess(conn, "Unsubscribed from restaurant with id " + id);
+                sendSuccess(requestId, conn, "Unsubscribed from restaurant with id " + id);
                 logger.info("Session {} unsubscribed from restaurant {}", conn.getRemoteAddress(), id);
             }
             default -> {
-                sendError(conn, "Unknown operator '" + args[0] + "'");
-                logger.warn("Invalid command from {}: {}", conn.getRemoteAddress(), args[0]);
+                sendError(requestId, conn, "Unknown operator '" + args[1] + "'");
+                logger.warn("Invalid command from {}: {}", conn.getRemoteAddress(), args[1]);
             }
         }
     }
@@ -194,7 +198,7 @@ public class TableUpdateSocketHandler implements InitializingBean, DisposableBea
         for (ClientConnection s : sessions.toArray(new ClientConnection[0])) {
             if (s.isOpen()) {
                 try {
-                    s.send(updateMessage);
+                    s.send("0;" + updateMessage);
                 } catch (IOException e) {
                     logger.warn("Failed to send message to {}: {}", s.getRemoteAddress(), e.getMessage());
                 }
@@ -202,16 +206,16 @@ public class TableUpdateSocketHandler implements InitializingBean, DisposableBea
         }
     }
 
-    private void sendError(ClientConnection session, String msg) throws IOException {
-        session.send("Error: " + msg);
+    private void sendError(Long id, ClientConnection session, String msg) throws IOException {
+        session.send(id + ";" + "Error: " + msg);
     }
 
-    private void sendSuccess(ClientConnection session, String msg) throws IOException {
-        session.send("Success: " + msg);
+    private void sendSuccess(Long id, ClientConnection session, String msg) throws IOException {
+        session.send(id + ";" + "Success: " + msg);
     }
 
-    private void sendPlainMessage(ClientConnection session, String msg) throws IOException {
-        session.send(msg);
+    private void sendPlainMessage(Long id, ClientConnection session, String msg) throws IOException {
+        session.send(id + ";" + msg);
     }
 
 

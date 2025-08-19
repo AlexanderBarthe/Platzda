@@ -52,6 +52,7 @@ public class HelpCommand implements ConsoleCommand {
                 manualDescriptions.put("untag <restaurant_id> <tag>", "Remove a tag from a restaurant");
                 manualDescriptions.put("sub <restaurant_id>", "Subscribes to updates of tables of a restaurant");
                 manualDescriptions.put("unsub <restaurant_id>", "Unsubscribes from updates of tables of a restaurant");
+                manualDescriptions.put("get-subs", "Get list of subscribed restaurants");
                 return "## List of subcommands for 'rest' ##\n\n" + formatManuals(manualDescriptions);
             }
             case "run" -> {

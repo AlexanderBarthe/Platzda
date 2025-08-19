@@ -33,7 +33,6 @@ public class TimeCommand implements ConsoleCommand {
 
         return String.format("Execution time: %d ms", time);
 
-
-
     }
+
 }

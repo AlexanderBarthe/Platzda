@@ -48,10 +48,10 @@ public class RunCommand implements ConsoleCommand {
 
         boolean runParallel;
 
-        if(args[1].equals("p") || args[1].equals("1") || args[1].equals("true")) {
+        if(args[1].equals("p") || args[1].equals("1") || args[1].equals("true") || args[1].equals("t")) {
             runParallel = true;
         }
-        else if(args[1].equals("r") || args[1].equals("0") || args[1].equals("false")) {
+        else if(args[1].equals("r") || args[1].equals("0") || args[1].equals("false")  || args[1].equals("f")) {
             runParallel = false;
         }
         else {
