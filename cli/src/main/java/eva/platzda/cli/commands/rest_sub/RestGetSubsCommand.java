@@ -1,14 +1,14 @@
 package eva.platzda.cli.commands.rest_sub;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
-import eva.platzda.cli.websockets.WebSocketManager;
+import eva.platzda.cli.websockets.SocketManager;
 
 public class RestGetSubsCommand implements ConsoleCommand {
 
-    private WebSocketManager webSocketManager;
+    private SocketManager socketManager;
 
-    public RestGetSubsCommand(WebSocketManager webSocketManager) {
-        this.webSocketManager = webSocketManager;
+    public RestGetSubsCommand(SocketManager socketManager) {
+        this.socketManager = socketManager;
     }
 
     @Override
@@ -18,7 +18,7 @@ public class RestGetSubsCommand implements ConsoleCommand {
 
     @Override
     public String executeCommand(String[] args) {
-        webSocketManager.sendMessage("get");
+        socketManager.sendMessage("get");
         return "List of subscribed restaurant ids:";
     }
 }

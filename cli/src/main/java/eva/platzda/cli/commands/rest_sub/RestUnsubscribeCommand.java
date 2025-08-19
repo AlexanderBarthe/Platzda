@@ -1,14 +1,14 @@
 package eva.platzda.cli.commands.rest_sub;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
-import eva.platzda.cli.websockets.WebSocketManager;
+import eva.platzda.cli.websockets.SocketManager;
 
 public class RestUnsubscribeCommand implements ConsoleCommand {
 
-    private final WebSocketManager webSocketManager;
+    private final SocketManager socketManager;
 
-    public RestUnsubscribeCommand(WebSocketManager webSocketManager) {
-        this.webSocketManager = webSocketManager;
+    public RestUnsubscribeCommand(SocketManager socketManager) {
+        this.socketManager = socketManager;
     }
 
     @Override
@@ -24,8 +24,8 @@ public class RestUnsubscribeCommand implements ConsoleCommand {
 
         try {
             long id = Long.parseLong(args[0]);
-            webSocketManager.sendMessage("unsubscribe;" + id);
-            return "Request sent!";
+            socketManager.sendMessage("unsubscribe;" + id);
+            return "Request sent...";
         } catch (NumberFormatException e) {
             return "Please enter a valid restaurant ID.";
         }

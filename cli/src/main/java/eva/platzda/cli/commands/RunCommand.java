@@ -3,7 +3,7 @@ package eva.platzda.cli.commands;
 import eva.platzda.cli.ExpressionEvaluator;
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.commands.execution.ConsoleManager;
-import eva.platzda.cli.websockets.WebSocketManager;
+import eva.platzda.cli.websockets.SocketManager;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -12,15 +12,15 @@ import java.util.regex.Pattern;
 
 public class RunCommand implements ConsoleCommand {
 
-    private final WebSocketManager webSocketManager;
+    private final SocketManager socketManager;
 
 
     private static final int THREAD_COUNT = 12;
     private static final Pattern BRACKET_EXPR = Pattern.compile("\\[([^\\]]+)]");
     private static final ConcurrentMap<String, List<String>> RPN_CACHE = new ConcurrentHashMap<>();
 
-    public RunCommand(WebSocketManager webSocketManager) {
-        this.webSocketManager = webSocketManager;
+    public RunCommand(SocketManager socketManager) {
+        this.socketManager = socketManager;
     }
 
 
@@ -65,12 +65,12 @@ public class RunCommand implements ConsoleCommand {
             formatAndRun(executionCount, Arrays.copyOfRange(args, 2, args.length));
         }
 
-        return "";
+        return "Execution finished!";
 
     }
 
     public void formatAndRun(int executionCount, String[] args) {
-        ConsoleManager consoleManager = new ConsoleManager(webSocketManager);
+        ConsoleManager consoleManager = new ConsoleManager(socketManager);
 
         for (int i = 0; i < executionCount; i++) {
             String[] processedArgs = new String[args.length];
@@ -104,7 +104,7 @@ public class RunCommand implements ConsoleCommand {
      * @param serializeRunCommand if true, calls to consoleManager.runCommand(...) are synchronized
      */
     public void formatAndRunParallel(int executionCount, String[] args, int threadPoolSize, boolean serializeRunCommand) {
-        ConsoleManager consoleManager = new ConsoleManager(webSocketManager);
+        ConsoleManager consoleManager = new ConsoleManager(socketManager);
 
         ExecutorService pool = Executors.newFixedThreadPool(Math.max(1, threadPoolSize));
         List<Future<?>> futures = new ArrayList<>(executionCount);

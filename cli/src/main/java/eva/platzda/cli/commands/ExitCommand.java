@@ -1,14 +1,14 @@
 package eva.platzda.cli.commands;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
-import eva.platzda.cli.websockets.WebSocketManager;
+import eva.platzda.cli.websockets.SocketManager;
 
 public class ExitCommand implements ConsoleCommand {
 
-    private WebSocketManager webSocketManager;
+    private SocketManager socketManager;
 
-    public ExitCommand(WebSocketManager webSocketManager) {
-        this.webSocketManager = webSocketManager;
+    public ExitCommand(SocketManager socketManager) {
+        this.socketManager = socketManager;
     }
 
     @Override
@@ -19,7 +19,7 @@ public class ExitCommand implements ConsoleCommand {
     @Override
     public String executeCommand(String[] args) {
 
-        webSocketManager.disconnect();
+        socketManager.disconnect();
 
         System.out.println("Goodbye!");
         System.exit(0);
