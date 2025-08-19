@@ -10,8 +10,7 @@ import java.util.List;
 public class RestCommand extends CommandExecutor implements ConsoleCommand {
 
     public RestCommand(WebSocketManager webSocketManager) {
-        super(List.of(
-                new RestListCommand(),
+        super(new RestListCommand(),
                 new RestCreateCommand(),
                 new RestGetCommand(),
                 new RestEditCommand(),
@@ -23,7 +22,7 @@ public class RestCommand extends CommandExecutor implements ConsoleCommand {
                 new RestSubscribeCommand(webSocketManager),
                 new RestUnsubscribeCommand(webSocketManager),
                 new RestGetSubsCommand(webSocketManager)
-        ));
+        );
     }
 
 

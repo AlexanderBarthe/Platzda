@@ -8,7 +8,7 @@ public abstract class CommandExecutor {
 
     private final HashMap<String, ConsoleCommand> commandKeys = new HashMap<>();
 
-    public CommandExecutor(List<ConsoleCommand> commands) {
+    public CommandExecutor(ConsoleCommand... commands) {
         registerCommands(commands);
     }
 
@@ -26,7 +26,7 @@ public abstract class CommandExecutor {
         return commandKeys;
     }
 
-    private void registerCommands(List<ConsoleCommand> commands) {
+    private void registerCommands(ConsoleCommand... commands) {
         for (ConsoleCommand command : commands) {
             commandKeys.put(command.command(), command);
         }

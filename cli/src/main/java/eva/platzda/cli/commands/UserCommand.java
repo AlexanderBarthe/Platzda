@@ -9,8 +9,7 @@ import java.util.List;
 public class UserCommand extends CommandExecutor implements ConsoleCommand {
 
     public UserCommand() {
-        super(List.of(
-                new UserListCommand(),
+        super(new UserListCommand(),
                 new UserCreateCommand(),
                 new UserGetCommand(),
                 new UserEditCommand(),
@@ -18,7 +17,7 @@ public class UserCommand extends CommandExecutor implements ConsoleCommand {
                 new UserDropCommand(),
                 new UserFlagCommand(),
                 new UserUnflagCommand()
-        ));
+        );
     }
 
 
