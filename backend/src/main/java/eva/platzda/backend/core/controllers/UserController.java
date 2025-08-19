@@ -1,9 +1,9 @@
 package eva.platzda.backend.core.controllers;
 
 import eva.platzda.backend.core.dtos.UserDto;
-import eva.platzda.backend.error_handling.NotFoundException;
 import eva.platzda.backend.core.models.User;
 import eva.platzda.backend.core.services.UserService;
+import eva.platzda.backend.error_handling.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,19 +1,14 @@
 package eva.platzda.cli.websockets;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SocketManager {
 
@@ -25,66 +20,174 @@ public class SocketManager {
     private BufferedReader reader;
     private Thread readerThread;
 
-    private final Map<SocketMessageListener, Long> listeners = new HashMap();
+    private final Map<SocketMessageListener, Long> listeners = new ConcurrentHashMap<>();
+
+    //Reconnect/Scheduler
+    private final ScheduledExecutorService reconnectExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r, "SocketManager-Reconnect");
+        t.setDaemon(true);
+        return t;
+    });
+    private final AtomicBoolean reconnectScheduled = new AtomicBoolean(false);
+    private ScheduledFuture<?> reconnectFuture;
+
+    //Backoff-Parameter
+    private final long initialDelayMs = 250L;
+    private final long maxDelayMs = 30_000L;
+    private final double backoffMultiplier = 4.0;
+
+    private volatile long currentDelayMs = initialDelayMs;
+
+    //If true -> no auto-reconnect (for manual disconnects)
+    private final AtomicBoolean stopReconnect = new AtomicBoolean(false);
 
     public SocketManager() {
         try {
             connect();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            System.out.println("Initial connect failed: " + e.getMessage());
+            scheduleReconnectIfNeeded();
         }
     }
 
-    public void connect() throws URISyntaxException {
-        URI uri = new URI(serverUrl);
+    /**
+     * Open a connection
+     */
+    public synchronized void connect() {
+        if (isConnected()) return;
+
+        if (stopReconnect.get()) {
+            return;
+        }
+
+        boolean ok = tryConnect();
+        if (!ok) {
+            scheduleReconnectIfNeeded();
+        } else {
+            //Rest params on successful connection
+            currentDelayMs = initialDelayMs;
+            cancelScheduledReconnect();
+        }
+    }
+
+    /**
+     * Attempt to open a connection
+     */
+    private boolean tryConnect() {
+        URI uri;
+        try {
+            uri = new URI(serverUrl);
+        } catch (URISyntaxException e) {
+            System.out.println("Invalid serverUrl: " + serverUrl + " -> " + e.getMessage());
+            return false;
+        }
+
         String host = uri.getHost();
         int port = uri.getPort() == -1 ? 80 : uri.getPort();
 
         try {
             socket = new Socket(host, port);
-
             writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
 
             System.out.println("Connected to server.");
 
-            readerThread = new Thread(() -> {
-                try {
-                    String line;
-                    while (!socket.isClosed() && (line = reader.readLine()) != null) {
-                        String[] split = line.split(";");
-                        String refactoredMessage = String.join(";", Arrays.copyOfRange(split, 1, split.length));
+            startReaderThread();
 
-                        Long requestId = null;
-                        try { requestId = Long.parseLong(split[0]); } catch (NumberFormatException ignored) {};
-                        if(requestId == null) requestId = 0L;
+            return true;
+        } catch (IOException ex) {
+            System.out.println("Error connecting to " + host + ":" + port + " -> " + ex.getMessage());
+            closeSilently();
+            return false;
+        }
+    }
 
-                        for (Map.Entry<SocketMessageListener, Long> entry : listeners.entrySet()) {
-                            if(requestId.equals(entry.getValue())) {
-                                try {entry.getKey().notify(refactoredMessage);} catch (Exception ignored) {}
-                            }
+    private void startReaderThread() {
+        //Stop old thread if existing
+        if (readerThread != null && readerThread.isAlive()) {
+            try {
+                readerThread.interrupt();
+            } catch (Exception ignored) {}
+        }
+
+        readerThread = new Thread(() -> {
+            try {
+                String line;
+                while (socket != null && !socket.isClosed() && (line = reader.readLine()) != null) {
+                    String[] split = line.split(";");
+                    String refactoredMessage = "";
+                    if (split.length > 1) {
+                        refactoredMessage = String.join(";", Arrays.copyOfRange(split, 1, split.length));
+                    }
+
+                    Long requestId = null;
+                    try { requestId = Long.parseLong(split[0]); } catch (Exception ignored) {}
+                    if (requestId == null) requestId = 0L;
+
+                    for (Map.Entry<SocketMessageListener, Long> entry : listeners.entrySet()) {
+                        if (requestId.equals(entry.getValue())) {
+                            try { entry.getKey().notify(refactoredMessage); } catch (Exception ignored) {}
                         }
                     }
-                } catch (IOException e) {
-                    System.out.println("Error: " + e.getMessage());
-                } finally {
-                    String reason = (socket == null || socket.isClosed()) ? "Socket closed" : "Stream ended";
-                    System.out.println("Connection closed. Reason: " + reason);
-
-                    for (SocketMessageListener l : listeners.keySet()) {
-                        try {
-                            l.notify("__CONNECTION_CLOSED__");
-                        } catch (Exception ignored) {}
-                    }
                 }
-            }, "SocketManager-Reader");
+            } catch (IOException e) {
+                System.out.println("Error: " + e.getMessage());
+            } finally {
+                String reason = (socket == null || socket.isClosed()) ? "Socket closed" : "Stream ended";
+                System.out.println("Connection closed. Reason: " + reason);
 
-            readerThread.setDaemon(true);
-            readerThread.start();
-        } catch (IOException ex) {
-            System.out.println("Error: " + ex.getMessage());
-            closeSilently();
+                closeSilently();
+
+                //Atempt reconnect if not stopped manually
+                if (!stopReconnect.get()) {
+                    scheduleReconnectIfNeeded();
+                }
+            }
+        }, "SocketManager-Reader");
+
+        readerThread.setDaemon(true);
+        readerThread.start();
+    }
+
+    /**
+     * Schedule a reconnect attempt using exponential backoff (if not already scheduled).
+     */
+    private void scheduleReconnectIfNeeded() {
+        if (reconnectScheduled.compareAndSet(false, true)) {
+            reconnectFuture = reconnectExecutor.schedule(() -> {
+                try {
+                    reconnectScheduled.set(false); // wir führen einmalig aus
+                    if (stopReconnect.get()) {
+                        return;
+                    }
+                    System.out.println("Attempting reconnect...");
+                    boolean connected = tryConnect();
+                    if (!connected) {
+                        //Increase backoff
+                        currentDelayMs = Math.min(maxDelayMs, (long)(currentDelayMs * backoffMultiplier));
+                        //Schedule next attempt
+                        reconnectScheduled.set(false);
+                        scheduleReconnectIfNeeded();
+                    } else {
+                        currentDelayMs = initialDelayMs;
+                    }
+                } catch (Exception e) {
+                    System.out.println("Reconnect attempt failed: " + e.getMessage());
+                    currentDelayMs = Math.min(maxDelayMs, (long)(currentDelayMs * backoffMultiplier));
+                    reconnectScheduled.set(false);
+                    scheduleReconnectIfNeeded();
+                }
+            }, currentDelayMs, TimeUnit.MILLISECONDS);
         }
+    }
+
+    private void cancelScheduledReconnect() {
+        try {
+            if (reconnectFuture != null && !reconnectFuture.isDone()) {
+                reconnectFuture.cancel(true);
+            }
+        } catch (Exception ignored) {}
+        reconnectScheduled.set(false);
     }
 
     public void sendMessage(String message) {
@@ -96,33 +199,56 @@ public class SocketManager {
         }
     }
 
-    public void disconnect() {
+    /**
+     * Disconnect from server
+     */
+    public synchronized void disconnect() {
+        //Prevent reconnect attempts
+        stopReconnect.set(true);
+        cancelScheduledReconnect();
+
         if (socket != null) {
-            try {
-                socket.close();
-            } catch (Exception ignored) {}
+            try { socket.close(); } catch (Exception ignored) {}
         }
         closeSilently();
     }
 
-    private void closeSilently() {
+    private synchronized void closeSilently() {
         try { if (writer != null) writer.close(); } catch (Exception ignored) {}
+        try { if (reader != null) reader.close(); } catch (Exception ignored) {}
+
         writer = null;
         reader = null;
+
+        try { if (socket != null && !socket.isClosed()) socket.close(); } catch (Exception ignored) {}
         socket = null;
+
+        //Interrupt reader thread
+        if (readerThread != null && readerThread.isAlive()) {
+            try { readerThread.interrupt(); } catch (Exception ignored) {}
+            readerThread = null;
+        }
     }
 
     public boolean isConnected() {
         return socket != null && socket.isConnected() && !socket.isClosed();
     }
 
-
     public void subscribe(long id, SocketMessageListener listener) {
-        if(listener != null) listeners.put(listener, id);
+        if (listener != null) listeners.put(listener, id);
     }
 
     public void unsubscribe(SocketMessageListener listener) {
-        if(listener != null) listeners.remove(listener);
+        if (listener != null) listeners.remove(listener);
     }
 
+    /**
+     * Cleanup on ending
+     */
+    public void shutdown() {
+        stopReconnect.set(true);
+        cancelScheduledReconnect();
+        try { reconnectExecutor.shutdownNow(); } catch (Exception ignored) {}
+        disconnect();
+    }
 }

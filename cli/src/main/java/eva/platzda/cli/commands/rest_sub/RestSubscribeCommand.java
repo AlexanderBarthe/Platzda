@@ -3,10 +3,8 @@ package eva.platzda.cli.commands.rest_sub;
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.websockets.MessageAwaiter;
 import eva.platzda.cli.websockets.SocketManager;
-import eva.platzda.cli.websockets.SocketMessageListener;
 
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 

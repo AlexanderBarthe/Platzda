@@ -20,6 +20,7 @@ public class ExitCommand implements ConsoleCommand {
     public String executeCommand(String[] args) {
 
         socketManager.disconnect();
+        socketManager.shutdown();
 
         System.out.println("Goodbye!");
         System.exit(0);

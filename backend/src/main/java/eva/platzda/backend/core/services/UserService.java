@@ -1,9 +1,9 @@
 package eva.platzda.backend.core.services;
 
-import eva.platzda.backend.error_handling.NotFoundException;
 import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.models.User;
 import eva.platzda.backend.core.repositories.UserRepository;
+import eva.platzda.backend.error_handling.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
