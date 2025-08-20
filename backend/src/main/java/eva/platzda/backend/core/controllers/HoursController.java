@@ -4,7 +4,6 @@ package eva.platzda.backend.core.controllers;
 import eva.platzda.backend.core.dtos.HoursDto;
 import eva.platzda.backend.core.models.OpeningHours;
 import eva.platzda.backend.core.models.Restaurant;
-import eva.platzda.backend.core.repositories.HoursRepository;
 import eva.platzda.backend.core.services.HoursService;
 import eva.platzda.backend.core.services.RestaurantService;
 import eva.platzda.backend.error_handling.NotFoundException;
@@ -22,13 +21,11 @@ public class HoursController {
 
     private RestaurantService restaurantService;
     private HoursService hoursService;
-    private final HoursRepository hoursRepository;
 
     @Autowired
-    public HoursController(RestaurantService restaurantService, HoursService hoursService,HoursRepository hoursRepository) {
+    public HoursController(RestaurantService restaurantService, HoursService hoursService) {
         this.restaurantService = restaurantService;
         this.hoursService = hoursService;
-        this.hoursRepository = hoursRepository;
     }
 
     /**
@@ -44,7 +41,7 @@ public class HoursController {
             throw new NotFoundException("Restaurant wit id " + restaurantId + " does not exist");
         }
 
-        List<OpeningHours> hours = hoursRepository.findByRestaurantId(restaurantId);
+        List<OpeningHours> hours = hoursService.findByRestaurantId(restaurantId);
         List<HoursDto> hoursDtos = new ArrayList<>();
         for(OpeningHours OpeningsHours: hours){
             hoursDtos.add(HoursDto.toDto((OpeningHours) hours));
@@ -66,7 +63,7 @@ public class HoursController {
     @PutMapping("/update/{restaurantId}")
     public ResponseEntity<HoursDto> updateHours(@PathVariable Long restaurantId, @RequestBody OpeningHours newHours) {
 
-        OpeningHours oldHours = hoursRepository.findByWeekday(newHours.getWeekday(), restaurantId);
+        OpeningHours oldHours = hoursService.findByWeekday(newHours.getWeekday(), restaurantId);
 
         oldHours.setOpeningTime(newHours.getOpeningTime());
         oldHours.setClosingTime(newHours.getClosingTime());

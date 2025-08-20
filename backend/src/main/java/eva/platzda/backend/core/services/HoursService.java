@@ -17,7 +17,11 @@ public class HoursService {
         this.hoursRepository = hoursRepository;
     }
 
+    public OpeningHours findByWeekday(int weekday, Long restaurantId) {return hoursRepository.findByWeekday(weekday, restaurantId);}
+
     public List<OpeningHours> findAllOpeningHours(){return hoursRepository.findAll();}
+
+    public List<OpeningHours> findByRestaurantId(Long restaurantId) {return hoursRepository.findByRestaurantId(restaurantId);}
 
     public OpeningHours findById(Long Id) {return hoursRepository.findById(Id).orElseThrow(() -> new RuntimeException("OpeningHours not found with id " + Id));}
 
