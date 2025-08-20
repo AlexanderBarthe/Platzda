@@ -5,10 +5,12 @@ import eva.platzda.backend.core.models.RestaurantTable;
 public class TableDto {
 
     private Long id;
+    private Long restaurantId;
     private int size;
 
-    public TableDto(Long id, int size) {
+    public TableDto(Long id, Long restaurant, int size) {
         this.id = id;
+        this.restaurantId = restaurant;
         this.size = size;
     }
 
@@ -17,6 +19,7 @@ public class TableDto {
 
         return new TableDto(
                 table.getId(),
+                table.getRestaurant().getId(),
                 table.getSize()
         );
     }

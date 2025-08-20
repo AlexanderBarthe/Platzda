@@ -8,12 +8,14 @@ import java.time.LocalTime;
 public class HoursDto {
 
     private Long id;
+    private Long restaurantId;
     private Integer weekday;
     private LocalTime openingTime;
     private LocalTime closingTime;
 
-    public HoursDto(Long id, Integer weekday, LocalTime openingTime, LocalTime closingTime) {
+    public HoursDto(Long id, Long restaurant, Integer weekday, LocalTime openingTime, LocalTime closingTime) {
         this.id = id;
+        this.restaurantId = restaurant;
         this.weekday = weekday;
         this.openingTime = openingTime;
         this.closingTime = closingTime;
@@ -24,6 +26,7 @@ public class HoursDto {
 
         return new HoursDto(
                 hours.getId(),
+                hours.getRestaurant().getId(),
                 hours.getWeekday(),
                 hours.getOpeningTime(),
                 hours.getClosingTime()
