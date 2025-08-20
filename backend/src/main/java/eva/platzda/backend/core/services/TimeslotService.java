@@ -1,0 +1,39 @@
+package eva.platzda.backend.core.services;
+
+
+import eva.platzda.backend.core.models.Timeslot;
+import eva.platzda.backend.core.repositories.TimeslotRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class TimeslotService {
+
+    private final TimeslotRepository timeslotRepository;
+
+    @Autowired
+    public TimeslotService(TimeslotRepository timeslotRepository) {
+        this.timeslotRepository = timeslotRepository;
+    }
+
+    /* wat fehlt:
+    freie Zeitslots richtig finden, pro tag
+    zeitslot buchen
+    */
+    public List<Timeslot> findAllTimeslots(){return timeslotRepository.findAll();}
+
+    public List<Timeslot> finAllFreeTimeslots() {return timeslotRepository.findFreeTimeslots();}
+
+    public Timeslot findById(Long id) {return timeslotRepository.findById(id).orElse(null);}
+
+    public Timeslot createTimeslot(Timeslot timeslot) {return timeslotRepository.save(timeslot);}
+
+    public Timeslot updateTimeslot(Timeslot timeslot) {return timeslotRepository.save(timeslot);}
+
+    public void deleteTimeslotById(Long id) {timeslotRepository.deleteById(id);}
+
+    public void deleteAllTimeslots() {timeslotRepository.deleteAll();}
+
+}

@@ -43,8 +43,8 @@ public class HoursController {
 
         List<OpeningHours> hours = hoursService.findByRestaurantId(restaurantId);
         List<HoursDto> hoursDtos = new ArrayList<>();
-        for(OpeningHours OpeningsHours: hours){
-            hoursDtos.add(HoursDto.toDto((OpeningHours) hours));
+        for(OpeningHours h: hours){
+            hoursDtos.add(HoursDto.toDto(h));
         }
         return ResponseEntity.ok(hoursDtos);
 
