@@ -35,6 +35,11 @@ public class Timeslot {
 
     }
 
+    public Timeslot(LocalDateTime start, LocalDateTime end) {
+        this.startTime = start;
+        this.endTime = end;
+    }
+
     public Timeslot(Long id, RestaurantTable table, LocalDateTime startTime, LocalDateTime endTime, User user) {
         this.id = id;
         this.table = table;

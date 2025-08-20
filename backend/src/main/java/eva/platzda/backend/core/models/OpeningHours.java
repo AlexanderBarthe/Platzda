@@ -20,7 +20,7 @@ public class OpeningHours {
     private Restaurant restaurant;
 
     @Column
-    private Integer weekday;
+    private Integer weekday; //1 = Montag, 7 = Sonntag
 
     @Column
     private LocalTime openingTime;

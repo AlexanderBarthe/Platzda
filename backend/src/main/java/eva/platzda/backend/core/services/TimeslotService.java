@@ -6,6 +6,7 @@ import eva.platzda.backend.core.repositories.TimeslotRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -36,4 +37,10 @@ public class TimeslotService {
 
     public void deleteAllTimeslots() {timeslotRepository.deleteAll();}
 
+    public void deleteTimeslotsBeforeDate(LocalDate date) {
+        List<Timeslot> slots = findAllTimeslots().stream().filter(timeslot -> timeslot.getStartTime().toLocalDate().isBefore(date)).toList();
+        for (Timeslot slot : slots) {
+            deleteTimeslotById(slot.getId());
+        }
+    }
 }
