@@ -1,19 +1,19 @@
 package eva.platzda.cli.commands.execution;
 
 import eva.platzda.cli.commands.*;
-import eva.platzda.cli.websockets.SocketManager;
+import eva.platzda.cli.websockets.SubscriptionService;
 
 import java.util.Scanner;
 
 public class ConsoleManager extends CommandExecutor {
 
-    public ConsoleManager(SocketManager socketManager) {
+    public ConsoleManager(SubscriptionService subscriptionService) {
         super(new HelpCommand(),
-                new ExitCommand(socketManager),
+                new ExitCommand(subscriptionService.getSocketManager()),
                 new UserCommand(),
-                new RestCommand(socketManager),
-                new RunCommand(socketManager),
-                new TimeCommand(socketManager)
+                new RestCommand(subscriptionService),
+                new RunCommand(subscriptionService),
+                new TimeCommand(subscriptionService)
         );
     }
 
@@ -22,14 +22,7 @@ public class ConsoleManager extends CommandExecutor {
         Scanner input = new Scanner(System.in);
 
         while (true) {
-
             runCommand(input.nextLine());
-
-            try {
-                Thread.sleep(20);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
         }
 
     }
@@ -43,7 +36,7 @@ public class ConsoleManager extends CommandExecutor {
         try {
             answer = execute(nextArgs);
         } catch (IllegalArgumentException e) {
-            System.out.println("Invalid command. See 'help' for more information.");
+            System.out.println("An error occurred while executing command: " + e.getMessage());
         }
 
         System.out.println(answer);

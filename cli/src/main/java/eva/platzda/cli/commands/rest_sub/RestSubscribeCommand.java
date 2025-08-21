@@ -1,19 +1,15 @@
 package eva.platzda.cli.commands.rest_sub;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
-import eva.platzda.cli.websockets.MessageAwaiter;
-import eva.platzda.cli.websockets.SocketManager;
-
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import eva.platzda.cli.websockets.SubscriptionService;
 
 public class RestSubscribeCommand implements ConsoleCommand {
 
-    private final SocketManager socketManager;
+    
+    private final SubscriptionService subscriptionService;
 
-    public RestSubscribeCommand(SocketManager socketManager) {
-        this.socketManager = socketManager;
+    public RestSubscribeCommand(SubscriptionService subscriptionService) {
+        this.subscriptionService = subscriptionService;
     }
 
     @Override
@@ -34,15 +30,7 @@ public class RestSubscribeCommand implements ConsoleCommand {
             return "Please enter a valid restaurant ID.";
         }
 
-        MessageAwaiter awaiter = new MessageAwaiter(socketManager, 10, TimeUnit.SECONDS);
-
-        try {
-            return awaiter.sendAndAwait(new Random().nextLong(), "subscribe;" + id);
-        } catch (TimeoutException te) {
-            return "Timeout.";
-        } catch (Exception e) {
-            return "Error: " + e.getMessage();
-        }
+        return subscriptionService.subscribe(id);
 
     }
 }

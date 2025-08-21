@@ -3,11 +3,11 @@ package eva.platzda.cli.commands;
 import eva.platzda.cli.commands.execution.CommandExecutor;
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.commands.rest_sub.*;
-import eva.platzda.cli.websockets.SocketManager;
+import eva.platzda.cli.websockets.SubscriptionService;
 
 public class RestCommand extends CommandExecutor implements ConsoleCommand {
 
-    public RestCommand(SocketManager socketManager) {
+    public RestCommand(SubscriptionService subscriptionService) {
         super(new RestListCommand(),
                 new RestCreateCommand(),
                 new RestGetCommand(),
@@ -17,9 +17,9 @@ public class RestCommand extends CommandExecutor implements ConsoleCommand {
                 new RestDropCommand(),
                 new RestTagCommand(),
                 new RestUntagCommand(),
-                new RestSubscribeCommand(socketManager),
-                new RestUnsubscribeCommand(socketManager),
-                new RestGetSubsCommand(socketManager)
+                new RestSubscribeCommand(subscriptionService),
+                new RestUnsubscribeCommand(subscriptionService),
+                new RestGetSubsCommand(subscriptionService)
         );
     }
 

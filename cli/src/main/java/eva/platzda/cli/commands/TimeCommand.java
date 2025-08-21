@@ -2,14 +2,14 @@ package eva.platzda.cli.commands;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.commands.execution.ConsoleManager;
-import eva.platzda.cli.websockets.SocketManager;
+import eva.platzda.cli.websockets.SubscriptionService;
 
 public class TimeCommand implements ConsoleCommand {
 
-    private final SocketManager socketManager;
+    private final SubscriptionService subscriptionService;
 
-    public TimeCommand(SocketManager socketManager) {
-        this.socketManager = socketManager;
+    public TimeCommand(SubscriptionService subscriptionService) {
+        this.subscriptionService = subscriptionService;
     }
 
 
@@ -21,7 +21,7 @@ public class TimeCommand implements ConsoleCommand {
     @Override
     public String executeCommand(String[] args) {
 
-        ConsoleManager executor = new ConsoleManager(socketManager);
+        ConsoleManager executor = new ConsoleManager(subscriptionService);
         String command = String.join(" ", args);
 
         long start = System.currentTimeMillis();

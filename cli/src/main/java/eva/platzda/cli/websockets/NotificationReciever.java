@@ -2,8 +2,8 @@ package eva.platzda.cli.websockets;
 
 public class NotificationReciever implements SocketMessageListener{
 
-    public NotificationReciever(SocketManager socketManager) {
-        socketManager.subscribe(0, this);
+    public NotificationReciever(SubscriptionService subscriptionService) {
+        subscriptionService.getSocketManager().subscribe(0, this);
     }
 
     @Override

@@ -19,6 +19,8 @@ public class SocketManager {
     private PrintWriter writer;
     private BufferedReader reader;
     private Thread readerThread;
+    
+    private final SubscriptionService subscriptionService;
 
     private final Map<SocketMessageListener, Long> listeners = new ConcurrentHashMap<>();
 
@@ -41,7 +43,10 @@ public class SocketManager {
     //If true -> no auto-reconnect (for manual disconnects)
     private final AtomicBoolean stopReconnect = new AtomicBoolean(false);
 
-    public SocketManager() {
+    public SocketManager(SubscriptionService subscriptionService) {
+        
+        this.subscriptionService = subscriptionService;
+        
         try {
             connect();
         } catch (Exception e) {
@@ -64,7 +69,7 @@ public class SocketManager {
         if (!ok) {
             scheduleReconnectIfNeeded();
         } else {
-            //Rest params on successful connection
+            //Reset params on successful connection, resubscribe
             currentDelayMs = initialDelayMs;
             cancelScheduledReconnect();
         }
@@ -93,6 +98,8 @@ public class SocketManager {
             System.out.println("Connected to server.");
 
             startReaderThread();
+
+            subscriptionService.resubscribeAll();
 
             return true;
         } catch (IOException ex) {
