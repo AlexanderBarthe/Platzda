@@ -31,8 +31,7 @@ public class Restaurant {
     public Restaurant() {
     }
 
-    public Restaurant(Long id, String address, User owner, int timeSlotDuration) {
-        this.id = id;
+    public Restaurant(String address, User owner, int timeSlotDuration) {
         this.address = address;
         this.owner = owner;
         this.timeSlotDuration = timeSlotDuration;

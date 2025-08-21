@@ -40,8 +40,7 @@ public class Timeslot {
         this.endTime = end;
     }
 
-    public Timeslot(Long id, RestaurantTable table, LocalDateTime startTime, LocalDateTime endTime, User user) {
-        this.id = id;
+    public Timeslot(RestaurantTable table, LocalDateTime startTime, LocalDateTime endTime, User user) {
         this.table = table;
         this.startTime = startTime;
         this.endTime = endTime;

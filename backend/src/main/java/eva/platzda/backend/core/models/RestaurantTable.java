@@ -24,8 +24,7 @@ public class RestaurantTable {
 
     }
 
-    public RestaurantTable(Long id, Restaurant restaurant, Integer size) {
-        this.id = id;
+    public RestaurantTable(Restaurant restaurant, Integer size) {
         this.restaurant = restaurant;
         this.size = size;
     }

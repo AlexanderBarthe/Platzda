@@ -30,8 +30,7 @@ public class OpeningHours {
 
     public OpeningHours() {}
 
-    public OpeningHours(Long id, Restaurant restaurant, Integer weekday, LocalTime openingTime, LocalTime closingTime) {
-        this.id = id;
+    public OpeningHours(Restaurant restaurant, Integer weekday, LocalTime openingTime, LocalTime closingTime) {
         this.restaurant = restaurant;
         this.weekday = weekday;
         this.openingTime = openingTime;
