@@ -18,6 +18,6 @@ public class RestGetSubsCommand implements ConsoleCommand {
 
     @Override
     public String executeCommand(String[] args) {
-        return subscriptionService.getAllSubscriptions();
+        return subscriptionService.getAllTableSubscriptions();
     }
 }

@@ -8,8 +8,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SocketManager {
@@ -23,8 +25,6 @@ public class SocketManager {
     private Thread readerThread;
     
     private final SubscriptionService subscriptionService;
-
-    private final Map<SocketMessageListener, Long> listeners = new ConcurrentHashMap<>();
 
     //Reconnect/Scheduler
     private final ScheduledExecutorService reconnectExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -71,7 +71,7 @@ public class SocketManager {
         if (!ok) {
             scheduleReconnectIfNeeded();
         } else {
-            //Reset params on successful connection, resubscribe
+            //Reset params on successful connection
             currentDelayMs = initialDelayMs;
             cancelScheduledReconnect();
         }
@@ -90,7 +90,7 @@ public class SocketManager {
         }
 
         String host = uri.getHost();
-        int port = uri.getPort() == -1 ? 80 : uri.getPort();
+        int port = uri.getPort() == -1 ? 9090 : uri.getPort();
 
         try {
             socket = new Socket(host, port);
@@ -101,7 +101,12 @@ public class SocketManager {
 
             startReaderThread();
 
-            subscriptionService.resubscribeAll();
+            try {
+                subscriptionService.resubscribeAll();
+            } catch (Exception e) {
+                System.out.println("An error occured trying to resubscribe.");
+                e.printStackTrace();
+            }
 
             return true;
         } catch (IOException ex) {
@@ -133,11 +138,7 @@ public class SocketManager {
                     try { requestId = Long.parseLong(split[0]); } catch (Exception ignored) {}
                     if (requestId == null) requestId = 0L;
 
-                    for (Map.Entry<SocketMessageListener, Long> entry : listeners.entrySet()) {
-                        if (requestId.equals(entry.getValue())) {
-                            try { entry.getKey().notify(refactoredMessage); } catch (Exception ignored) {}
-                        }
-                    }
+                    subscriptionService.notifyNotificationRecievers(requestId, refactoredMessage);
                 }
             } catch (IOException e) {
                 System.out.println("Error: " + e.getMessage());
@@ -241,14 +242,6 @@ public class SocketManager {
 
     public boolean isConnected() {
         return socket != null && socket.isConnected() && !socket.isClosed();
-    }
-
-    public void subscribe(long id, SocketMessageListener listener) {
-        if (listener != null) listeners.put(listener, id);
-    }
-
-    public void unsubscribe(SocketMessageListener listener) {
-        if (listener != null) listeners.remove(listener);
     }
 
     /**

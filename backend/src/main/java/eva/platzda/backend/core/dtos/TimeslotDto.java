@@ -3,7 +3,6 @@ package eva.platzda.backend.core.dtos;
 import eva.platzda.backend.core.models.Timeslot;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public class TimeslotDto {
 

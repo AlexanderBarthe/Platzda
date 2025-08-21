@@ -5,7 +5,6 @@ import eva.platzda.backend.core.repositories.TableRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TableService {

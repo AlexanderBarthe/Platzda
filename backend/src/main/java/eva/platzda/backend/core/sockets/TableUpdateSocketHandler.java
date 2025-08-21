@@ -201,7 +201,7 @@ public class TableUpdateSocketHandler implements InitializingBean, DisposableBea
         for (ClientConnection s : sessions.toArray(new ClientConnection[0])) {
             if (s.isOpen()) {
                 try {
-                    s.send("0;" + updateMessage);
+                    s.send(restaurantId + ";" + updateMessage);
                 } catch (IOException e) {
                     logger.warn("Failed to send message to {}: {}", s.getRemoteAddress(), e.getMessage());
                 }

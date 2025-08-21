@@ -4,4 +4,6 @@ public interface SocketMessageListener {
 
     void notify(String line);
 
+    long getNotificationId();
+
 }

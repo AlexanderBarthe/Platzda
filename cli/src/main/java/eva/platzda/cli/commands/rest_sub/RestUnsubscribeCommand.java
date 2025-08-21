@@ -30,6 +30,6 @@ public class RestUnsubscribeCommand implements ConsoleCommand {
             return "Please enter a valid restaurant ID.";
         }
 
-        return  subscriptionService.unsubscribe(id);
+        return  subscriptionService.unsubscribeFromTable(id);
     }
 }

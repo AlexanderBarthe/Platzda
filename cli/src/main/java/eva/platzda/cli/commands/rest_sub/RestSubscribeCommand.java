@@ -30,7 +30,7 @@ public class RestSubscribeCommand implements ConsoleCommand {
             return "Please enter a valid restaurant ID.";
         }
 
-        return subscriptionService.subscribe(id);
+        return subscriptionService.subscribeToTable(id);
 
     }
 }
