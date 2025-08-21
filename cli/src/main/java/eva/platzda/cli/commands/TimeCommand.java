@@ -2,7 +2,7 @@ package eva.platzda.cli.commands;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.commands.execution.ConsoleManager;
-import eva.platzda.cli.websockets.SubscriptionService;
+import eva.platzda.cli.notification_management.SubscriptionService;
 
 public class TimeCommand implements ConsoleCommand {
 

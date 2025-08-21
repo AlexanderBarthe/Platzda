@@ -17,12 +17,13 @@ public class HelpCommand implements ConsoleCommand {
 
         if(args.length == 0) {
             Map<String, String> manualDescriptions = new LinkedHashMap<>();
-            manualDescriptions.put("help", "This page");
+            manualDescriptions.put("help <subpage>", "Help pages");
             manualDescriptions.put("exit", "Close this CLI");
             manualDescriptions.put("user", "Commands for user management");
             manualDescriptions.put("rest", "Commands for restaurants management");
-            manualDescriptions.put("run", "Runs other commands multiple times");
-            manualDescriptions.put("time", "Use to track runtime of the specified command");
+            manualDescriptions.put("run <amount> <multithreading t/f> <command>", "Runs other commands multiple times");
+            manualDescriptions.put("time <command>", "Use to track runtime of the specified command");
+            manualDescriptions.put("await <id>", "Awaits notifications on table id. Only use for test purposes!");
             return "## List of commands ##\n\n" + formatManuals(manualDescriptions);
         }
 

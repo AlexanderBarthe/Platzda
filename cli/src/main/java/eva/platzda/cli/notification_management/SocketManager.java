@@ -1,4 +1,4 @@
-package eva.platzda.cli.websockets;
+package eva.platzda.cli.notification_management;
 
 import io.github.cdimascio.dotenv.Dotenv;
 

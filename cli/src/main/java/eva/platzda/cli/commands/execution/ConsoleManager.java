@@ -1,7 +1,7 @@
 package eva.platzda.cli.commands.execution;
 
 import eva.platzda.cli.commands.*;
-import eva.platzda.cli.websockets.SubscriptionService;
+import eva.platzda.cli.notification_management.SubscriptionService;
 
 import java.util.Scanner;
 
@@ -13,7 +13,8 @@ public class ConsoleManager extends CommandExecutor {
                 new UserCommand(),
                 new RestCommand(subscriptionService),
                 new RunCommand(subscriptionService),
-                new TimeCommand(subscriptionService)
+                new TimeCommand(subscriptionService),
+                new AwaitCommand(subscriptionService)
         );
     }
 

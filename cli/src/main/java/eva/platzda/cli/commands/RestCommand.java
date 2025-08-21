@@ -3,7 +3,7 @@ package eva.platzda.cli.commands;
 import eva.platzda.cli.commands.execution.CommandExecutor;
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.commands.rest_sub.*;
-import eva.platzda.cli.websockets.SubscriptionService;
+import eva.platzda.cli.notification_management.SubscriptionService;
 
 public class RestCommand extends CommandExecutor implements ConsoleCommand {
 

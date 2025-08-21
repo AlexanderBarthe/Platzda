@@ -1,4 +1,4 @@
-package eva.platzda.cli.websockets;
+package eva.platzda.cli.notification_management;
 
 import java.util.HashSet;
 import java.util.Random;
@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 public class SubscriptionService {
     
-    private final HashSet<NotificationReciever> notificationRecievers = new HashSet<>();
+    private final HashSet<NotificationReceiver> notificationReceivers = new HashSet<>();
 
     private final SocketManager socketManager;
 
@@ -21,22 +21,30 @@ public class SubscriptionService {
     public SubscriptionService() {
         socketManager = new SocketManager(this);
     }
-    
+
+    public void addNotificationReciever(NotificationReceiver notificationReceiver) {
+        notificationReceivers.add(notificationReceiver);
+    }
+
+    public void removeNotificationReciever(NotificationReceiver notificationReceiver) {
+        notificationReceivers.remove(notificationReceiver);
+    }
+
     public void flushNotificationRecievers() {
-        this.notificationRecievers.clear();
+        this.notificationReceivers.clear();
     }
 
     public String subscribeToTable(Long subscribedId) {
-        return subscribeToTable(new NotificationReciever(subscribedId, "notification", System.out::println));
+        return subscribeToTable(new NotificationReceiver(subscribedId, "notification", System.out::println));
     }
     
-    public String subscribeToTable(NotificationReciever subscriber) {
-        this.notificationRecievers.add(subscriber);
+    public String subscribeToTable(NotificationReceiver subscriber) {
+        this.notificationReceivers.add(subscriber);
         
         return sendTableSubscribtion(subscriber);
     }
 
-    private String sendTableSubscribtion(NotificationReciever subscriber) {
+    private String sendTableSubscribtion(NotificationReceiver subscriber) {
         try {
             return sendAndAwait(generateUniqueId(), "subscribe;" + subscriber.getNotificationId());
         } catch (TimeoutException te) {
@@ -48,11 +56,11 @@ public class SubscriptionService {
     
     public String unsubscribeFromTable(Long subscribedId) {
 
-        Set<NotificationReciever> subscribersWithId = notificationRecievers.stream()
-                .filter(notificationReciever -> notificationReciever.getNotificationId() == subscribedId)
+        Set<NotificationReceiver> subscribersWithId = notificationReceivers.stream()
+                .filter(notificationReceiver -> notificationReceiver.getNotificationId() == subscribedId)
                 .collect(Collectors.toSet());
-        for(NotificationReciever subscriber : subscribersWithId) {
-            notificationRecievers.remove(subscriber);
+        for(NotificationReceiver subscriber : subscribersWithId) {
+            notificationReceivers.remove(subscriber);
         }
 
         try {
@@ -80,15 +88,15 @@ public class SubscriptionService {
     }
 
     public void resubscribeAll() {
-        Set<NotificationReciever> tableNotificationRecievers = notificationRecievers.stream().filter(n -> n.getNotificationType().equals("notification")).collect(Collectors.toSet());
+        Set<NotificationReceiver> tableNotificationReceivers = notificationReceivers.stream().filter(n -> n.getNotificationType().equals("notification")).collect(Collectors.toSet());
 
-        for(NotificationReciever tableNR : tableNotificationRecievers) {
+        for(NotificationReceiver tableNR : tableNotificationReceivers) {
             sendTableSubscribtion(tableNR);
         }
     }
 
     public void notifyNotificationRecievers(Long subscribedId, String notification) {
-        for(NotificationReciever subscriber : notificationRecievers) {
+        for(NotificationReceiver subscriber : notificationReceivers) {
             if(subscribedId.equals(subscriber.getNotificationId())) {
                 subscriber.notify(notification);
             }
@@ -106,7 +114,7 @@ public class SubscriptionService {
     }
 
     private boolean isNotificationIdInUse(Long id) {
-        for(NotificationReciever subscriber : notificationRecievers) {
+        for(NotificationReceiver subscriber : notificationReceivers) {
             if(subscriber.getNotificationId() == id) return true;
         }
         return false;
@@ -122,7 +130,7 @@ public class SubscriptionService {
 
         CompletableFuture<String> future = new CompletableFuture<>();
 
-        NotificationReciever listener = new NotificationReciever(requestId, "answer", line -> {
+        NotificationReceiver listener = new NotificationReceiver(requestId, "answer", line -> {
             if (line == null) return;
 
             if ("__CONNECTION_CLOSED__".equals(line)) {
@@ -133,7 +141,7 @@ public class SubscriptionService {
             future.complete(line);
         });
 
-        notificationRecievers.add(listener);
+        addNotificationReciever(listener);
         try {
             getSocketManager().sendMessage(requestId + ";" + message);
             try {
@@ -142,7 +150,7 @@ public class SubscriptionService {
                 throw new TimeoutException("Timeout waiting for response to: " + message);
             }
         } finally {
-            notificationRecievers.remove(listener);
+            removeNotificationReciever(listener);
         }
     }
 

@@ -3,7 +3,7 @@ package eva.platzda.cli.commands;
 import eva.platzda.cli.ExpressionEvaluator;
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.commands.execution.ConsoleManager;
-import eva.platzda.cli.websockets.SubscriptionService;
+import eva.platzda.cli.notification_management.SubscriptionService;
 
 import java.util.ArrayList;
 import java.util.Arrays;

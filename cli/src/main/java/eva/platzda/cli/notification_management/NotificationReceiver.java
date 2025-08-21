@@ -1,8 +1,8 @@
-package eva.platzda.cli.websockets;
+package eva.platzda.cli.notification_management;
 
 import java.util.function.Consumer;
 
-public class NotificationReciever implements SocketMessageListener {
+public class NotificationReceiver implements SocketMessageListener {
 
     private long notificationId;
 
@@ -10,7 +10,7 @@ public class NotificationReciever implements SocketMessageListener {
 
     private Consumer<String> consumer;
 
-    public NotificationReciever(long notificationId, String notificationType, Consumer<String> consumer) {
+    public NotificationReceiver(long notificationId, String notificationType, Consumer<String> consumer) {
         this.notificationId = notificationId;
         this.notificationType = notificationType;
         this.consumer = consumer;
@@ -26,13 +26,17 @@ public class NotificationReciever implements SocketMessageListener {
         return notificationId;
     }
 
+    @Override
+    public void setNotificationId(long notificationId) {
+        this.notificationId = notificationId;
+    }
+
+    @Override
     public String getNotificationType() {
         return notificationType;
     }
 
-    public void setNotificationId(long notificationId) {
-        this.notificationId = notificationId;
-    }
+
 
 
 

@@ -1,7 +1,7 @@
 package eva.platzda.cli.commands;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
-import eva.platzda.cli.websockets.SocketManager;
+import eva.platzda.cli.notification_management.SocketManager;
 
 public class ExitCommand implements ConsoleCommand {
 
