@@ -22,7 +22,6 @@ public final class ExpressionEvaluator {
         OPS.put("*", new Op("*", 2, Assoc.LEFT, 2));
         OPS.put("/", new Op("/", 2, Assoc.LEFT, 2)); // integer division
         OPS.put("%", new Op("%", 2, Assoc.LEFT, 2)); // modulo
-        OPS.put("u-", new Op("u-", 3, Assoc.RIGHT, 1)); // unary minus
     }
 
     private static boolean isOperator(String token) {

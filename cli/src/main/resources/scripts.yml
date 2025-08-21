@@ -1,3 +1,4 @@
 scripts:
   hello:
-    - time user create Hello
+    - await 2
+    - help

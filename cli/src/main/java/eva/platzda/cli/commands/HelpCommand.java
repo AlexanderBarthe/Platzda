@@ -23,7 +23,7 @@ public class HelpCommand implements ConsoleCommand {
             manualDescriptions.put("rest", "Commands for restaurants management");
             manualDescriptions.put("run <amount> <multithreading t/f> <command>", "Runs other commands multiple times");
             manualDescriptions.put("time <command>", "Use to track runtime of the specified command");
-            manualDescriptions.put("await <id>", "Awaits notifications on table id. Only use for test purposes!");
+            manualDescriptions.put("await <ids>", "Awaits notifications on table id. Only usable in scripts. Example for ids: 1-3,4,6-9,10");
             manualDescriptions.put("listscripts", "Gives a list of the available scripts to run");
             manualDescriptions.put("script <name>", "Runs given script");
             return "## List of commands ##\n\n" + formatManuals(manualDescriptions);
