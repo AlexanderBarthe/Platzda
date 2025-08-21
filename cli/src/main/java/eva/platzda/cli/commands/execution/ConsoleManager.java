@@ -1,20 +1,25 @@
 package eva.platzda.cli.commands.execution;
 
 import eva.platzda.cli.commands.*;
+import eva.platzda.cli.commands.scripts.ListScriptsCommand;
+import eva.platzda.cli.commands.scripts.ScriptCommand;
+import eva.platzda.cli.commands.scripts.ScriptLoader;
 import eva.platzda.cli.notification_management.SubscriptionService;
 
 import java.util.Scanner;
 
 public class ConsoleManager extends CommandExecutor {
 
-    public ConsoleManager(SubscriptionService subscriptionService) {
+    public ConsoleManager(SubscriptionService subscriptionService, ScriptLoader scriptLoader) {
         super(new HelpCommand(),
-                new ExitCommand(subscriptionService.getSocketManager()),
+                new ExitCommand(subscriptionService),
                 new UserCommand(),
                 new RestCommand(subscriptionService),
-                new RunCommand(subscriptionService),
-                new TimeCommand(subscriptionService),
-                new AwaitCommand(subscriptionService)
+                new RunCommand(subscriptionService, scriptLoader),
+                new TimeCommand(subscriptionService, scriptLoader),
+                new AwaitCommand(subscriptionService),
+                new ListScriptsCommand(scriptLoader),
+                new ScriptCommand(subscriptionService, scriptLoader)
         );
     }
 

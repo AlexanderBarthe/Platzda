@@ -2,13 +2,14 @@ package eva.platzda.cli.commands;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.notification_management.SocketManager;
+import eva.platzda.cli.notification_management.SubscriptionService;
 
 public class ExitCommand implements ConsoleCommand {
 
     private SocketManager socketManager;
 
-    public ExitCommand(SocketManager socketManager) {
-        this.socketManager = socketManager;
+    public ExitCommand(SubscriptionService subscriptionService) {
+        this.socketManager = subscriptionService.getSocketManager();
     }
 
     @Override

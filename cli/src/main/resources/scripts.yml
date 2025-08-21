@@ -1,0 +1,3 @@
+scripts:
+  hello:
+    - time user create Hello

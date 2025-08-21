@@ -2,14 +2,17 @@ package eva.platzda.cli.commands;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.commands.execution.ConsoleManager;
+import eva.platzda.cli.commands.scripts.ScriptLoader;
 import eva.platzda.cli.notification_management.SubscriptionService;
 
 public class TimeCommand implements ConsoleCommand {
 
     private final SubscriptionService subscriptionService;
+    private final ScriptLoader scriptLoader;
 
-    public TimeCommand(SubscriptionService subscriptionService) {
+    public TimeCommand(SubscriptionService subscriptionService, ScriptLoader scriptLoader) {
         this.subscriptionService = subscriptionService;
+        this.scriptLoader = scriptLoader;
     }
 
 
@@ -21,7 +24,7 @@ public class TimeCommand implements ConsoleCommand {
     @Override
     public String executeCommand(String[] args) {
 
-        ConsoleManager executor = new ConsoleManager(subscriptionService);
+        ConsoleManager executor = new ConsoleManager(subscriptionService, scriptLoader);
         String command = String.join(" ", args);
 
         long start = System.currentTimeMillis();

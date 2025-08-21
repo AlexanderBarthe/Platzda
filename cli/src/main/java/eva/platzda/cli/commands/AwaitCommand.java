@@ -24,7 +24,7 @@ public class AwaitCommand implements ConsoleCommand {
     public String executeCommand(String[] args) {
 
         if(args.length == 0){
-            return "Not enough arguments provided. See 'help user' for more information.";
+            return "Not enough arguments provided. See 'help' for more information.";
         }
 
         Long notificationId = null;
