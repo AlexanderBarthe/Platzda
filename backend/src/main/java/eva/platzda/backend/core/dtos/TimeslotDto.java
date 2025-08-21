@@ -27,9 +27,24 @@ public class TimeslotDto {
                 timeslot.getId(),
                 timeslot.getStartTime(),
                 timeslot.getEndTime(),
-                timeslot.getUser().getId(),
-                timeslot.getTable().getId()
+                TimeslotDto.checkUserId(timeslot),
+                TimeslotDto.checkTableId(timeslot)
         );
+    }
+
+    public static Long checkUserId(Timeslot timeslot){
+        if(timeslot.getUser() == null) {
+            return null;
+        } else {
+            return timeslot.getUser().getId();
+        }
+    }
+    public static Long checkTableId(Timeslot timeslot) {
+        if(timeslot.getTable() == null) {
+            return null;
+        } else {
+            return timeslot.getTable().getId();
+        }
     }
 
     public Long getId() {

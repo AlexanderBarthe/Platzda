@@ -8,9 +8,11 @@ import eva.platzda.backend.core.repositories.HoursRepository;
 import eva.platzda.backend.core.repositories.RestaurantRepository;
 import eva.platzda.backend.core.repositories.TableRepository;
 import eva.platzda.backend.core.repositories.TimeslotRepository;
+import eva.platzda.backend.core.services.TimeslotGenerationService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
@@ -22,16 +24,19 @@ public class DataLoader implements CommandLineRunner {
     private final RestaurantRepository restaurantRepository;
     private final HoursRepository hoursRepository;
     private final TimeslotRepository timeslotRepository;
+    private final TimeslotGenerationService service;
 
 
     public DataLoader(TableRepository tableRepository,
                       RestaurantRepository restaurantRepository,
                       HoursRepository hoursRepository,
-                      TimeslotRepository timeslotRepository) {
+                      TimeslotRepository timeslotRepository,
+                      TimeslotGenerationService service) {
         this.tableRepository = tableRepository;
         this.restaurantRepository = restaurantRepository;
         this.hoursRepository = hoursRepository;
         this.timeslotRepository = timeslotRepository;
+        this.service = service;
     }
 
     @Override
@@ -73,6 +78,12 @@ public class DataLoader implements CommandLineRunner {
         }
         if(timeslotRepository.count() == 0) {
             timeslotRepository.save(new Timeslot(tableRepository.getReferenceById(1L), LocalDateTime.of(2025, Month.SEPTEMBER, 10, 10, 0), LocalDateTime.of(2025, Month.SEPTEMBER, 10, 10, 15), null));
+
+        }
+        //service.createTimeslots(restaurantRepository.getReferenceById(1L), LocalDate.of(2025, 10, 10));
+        //service.publishTimeslots(LocalDate.of(2025,10,10));
+        for (int i = 1; i <= 14; i++){
+            service.publishTimeslots(LocalDate.now().plusDays(i));
         }
     }
 }

@@ -4,13 +4,16 @@ import eva.platzda.backend.core.models.OpeningHours;
 import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.models.RestaurantTable;
 import eva.platzda.backend.core.models.Timeslot;
+import eva.platzda.backend.core.repositories.TimeslotRepository;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,12 +24,15 @@ public class TimeslotGenerationService {
     private final TableService tableService;
     private final RestaurantService restaurantService;
     private final HoursService hoursService;
+    private final TimeslotRepository timeslotRepository;
 
-    public TimeslotGenerationService(TimeslotService timeslotService, TableService tableService, RestaurantService restaurantService, HoursService hoursService) {
+    @Autowired
+    public TimeslotGenerationService(TimeslotService timeslotService, TableService tableService, RestaurantService restaurantService, HoursService hoursService, TimeslotRepository timeslotRepository) {
         this.tableService = tableService;
         this.timeslotService = timeslotService;
         this.restaurantService = restaurantService;
         this.hoursService = hoursService;
+        this.timeslotRepository = timeslotRepository;
     }
 
     @Scheduled(cron = "0 0 1 * * *")
@@ -34,22 +40,15 @@ public class TimeslotGenerationService {
         publishTimeslots(LocalDate.now().plusWeeks(2));
     }
 
-    @PostConstruct
-    public void init() {
-        for (int i = 1; i < 14; i++){
-            publishTimeslots(LocalDate.now().plusDays(i));
-        }
-    }
-
     public void publishTimeslots(LocalDate targetDate) {
 
         List<Restaurant> allRestaurants = restaurantService.findAllRestaurants();
         for(Restaurant r: allRestaurants) {
             List<Timeslot> slots = createTimeslots(r, targetDate);
-            for(RestaurantTable t: tableService.findAllTablesRestaurant(r.getId())) {
-                for(Timeslot s: slots) {
-                    s.setTable(t);
-                    timeslotService.createTimeslot(s);
+            for(Timeslot s: slots) {
+                for(RestaurantTable t: tableService.findAllTablesRestaurant(r.getId())) {
+                    Timeslot saved = new Timeslot(t, s.getStartTime(), s.getEndTime(), null);
+                    timeslotRepository.saveAndFlush(saved);
                 }
             }
         }
@@ -63,6 +62,9 @@ public class TimeslotGenerationService {
 
         DayOfWeek weekday = date.getDayOfWeek();
         OpeningHours hours = hoursService.findByWeekday(weekday.getValue(), r.getId());
+        if (hours == null) {
+            return new ArrayList<>();
+        }
         LocalDateTime current = LocalDateTime.of(date, hours.getOpeningTime());
         LocalDateTime closingTime = LocalDateTime.of(date, hours.getClosingTime());
         while (current.isBefore(closingTime)) {

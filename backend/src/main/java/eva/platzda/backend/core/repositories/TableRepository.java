@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface TableRepository extends JpaRepository<RestaurantTable, Long> {
 
-    @Query("SELECT b FROM RestaurantTable b WHERE b.restaurant.id = :restaurantId")
+    @Query("SELECT b FROM RestaurantTable b WHERE b.restaurant.id = :restaurantid")
     List<RestaurantTable> findAllTablesRestaurant(@Param("restaurantid") Long restaurantid);
+
+    List<RestaurantTable> findByRestaurantId(Long restaurantId);
 }

@@ -15,7 +15,7 @@ public class TableService {
 
     public List<RestaurantTable> findAllTablesAllRestaurants() {return tableRepository.findAll();}
 
-    public List<RestaurantTable> findAllTablesRestaurant(Long restaurantId) {return  tableRepository.findAllTablesRestaurant(restaurantId);}
+    public List<RestaurantTable> findAllTablesRestaurant(Long restaurantId) {return tableRepository.findByRestaurantId(restaurantId);}
 
     public RestaurantTable findById(Long id) {return tableRepository.findById(id).orElseThrow(() -> new RuntimeException("Table not found with id " + id));}
 
