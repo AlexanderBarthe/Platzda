@@ -23,29 +23,18 @@ public class TimeslotDto {
     public static TimeslotDto toDto(Timeslot timeslot){
         if(timeslot==null) return null;
 
+        Long userId = (timeslot.getUser() == null) ? null : timeslot.getUser().getId();
+        Long tableId = (timeslot.getTable() == null) ? null : timeslot.getTable().getId();
+
         return new TimeslotDto(
                 timeslot.getId(),
                 timeslot.getStartTime(),
                 timeslot.getEndTime(),
-                TimeslotDto.checkUserId(timeslot),
-                TimeslotDto.checkTableId(timeslot)
+                userId,
+                tableId
         );
     }
 
-    public static Long checkUserId(Timeslot timeslot){
-        if(timeslot.getUser() == null) {
-            return null;
-        } else {
-            return timeslot.getUser().getId();
-        }
-    }
-    public static Long checkTableId(Timeslot timeslot) {
-        if(timeslot.getTable() == null) {
-            return null;
-        } else {
-            return timeslot.getTable().getId();
-        }
-    }
 
     public Long getId() {
         return id;

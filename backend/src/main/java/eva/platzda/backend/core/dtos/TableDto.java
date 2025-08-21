@@ -17,9 +17,11 @@ public class TableDto {
     public static TableDto toDto(RestaurantTable table) {
         if(table==null) return null;
 
+        Long restaurantId = (table.getRestaurant() == null) ? null : table.getRestaurant().getId();
+
         return new TableDto(
                 table.getId(),
-                table.getRestaurant().getId(),
+                restaurantId,
                 table.getSize()
         );
     }
