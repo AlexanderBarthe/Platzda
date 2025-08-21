@@ -1,5 +1,7 @@
 package eva.platzda.cli.websockets;
 
+import io.github.cdimascio.dotenv.Dotenv;
+
 import java.io.*;
 import java.net.Socket;
 import java.net.URI;
@@ -12,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SocketManager {
 
-    private static final String serverUrl = "ws://localhost:9090";
+    private static final String serverUrl = Dotenv.load().get("backend_subscriptions_address");;
 
     private Socket socket;
 

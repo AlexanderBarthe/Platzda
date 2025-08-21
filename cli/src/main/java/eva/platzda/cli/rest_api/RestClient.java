@@ -2,6 +2,7 @@ package eva.platzda.cli.rest_api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import java.io.IOException;
 import java.net.URI;
@@ -11,7 +12,7 @@ import java.net.http.HttpResponse;
 
 public abstract class RestClient {
 
-    private static final String BASE_URL = "http://localhost:8080";
+    private static final String BASE_URL = Dotenv.load().get("backend_restapi_address");
 
     public static String sendRequest(String url, HttpMethod method, String body) {
 
