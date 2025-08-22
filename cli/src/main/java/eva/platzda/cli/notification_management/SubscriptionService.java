@@ -1,16 +1,15 @@
 package eva.platzda.cli.notification_management;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 public class SubscriptionService {
     
-    private final HashSet<NotificationReceiver> notificationReceivers = new HashSet<>();
+    private final Set<NotificationReceiver> notificationReceivers = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     private final SocketManager socketManager;
 
@@ -28,10 +27,6 @@ public class SubscriptionService {
 
     public void removeNotificationReciever(NotificationReceiver notificationReceiver) {
         notificationReceivers.remove(notificationReceiver);
-    }
-
-    public void flushNotificationRecievers() {
-        this.notificationReceivers.clear();
     }
 
     public String subscribeToTable(Long subscribedId) {
@@ -71,6 +66,19 @@ public class SubscriptionService {
             return "Error: " + e.getMessage();
         }
         
+    }
+
+    public String unsubscribeFrommAllTables() {
+        List<NotificationReceiver> tableRecievers = new ArrayList<>();
+        notificationReceivers.stream().filter(nr -> nr.getNotificationType().equals("notification")).forEach(tableRecievers::add);
+        tableRecievers.forEach(notificationReceivers::remove);
+        try {
+            return sendAndAwait(generateUniqueId(), "unsubscribe");
+        } catch (TimeoutException te) {
+            return "Timeout.";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
     }
 
     public String getAllTableSubscriptions() {

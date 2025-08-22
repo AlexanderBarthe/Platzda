@@ -145,17 +145,40 @@ public class TableUpdateSocketHandler implements InitializingBean, DisposableBea
         try {requestId = Long.parseLong(args[0]);} catch (Exception ignored) {}
         if(requestId == null) return;
 
-        if (args.length == 1 || (args.length == 2 && !args[1].equals(CMD_GET))) {
+        if (args.length == 1) {
+            //No argument
+
             sendError(requestId, conn, "Insufficient arguments");
             logger.warn("Invalid message from {}: Insufficient arguments", conn.getRemoteAddress());
             return;
-        } else if (args.length == 2) {
+        } else if (args.length == 2 && args[1].equals(CMD_GET)) {
+            //Return all subscribed ids
+
             //find all ids to which this connection is subscribed
             String ids = subscriptions.entrySet().stream()
                     .filter(entry -> entry.getValue().contains(conn))
                     .map(entry -> entry.getKey().toString())
                     .collect(Collectors.joining(","));
             sendPlainMessage(requestId, conn, ids);
+            logger.info("Session {} requested a subscription list.", conn.getRemoteAddress());
+            return;
+        } else if (args.length == 2 && args[1].equals(CMD_UNSUBSCRIBE)) {
+            //Remove host from all subscriber lists
+
+            subscriptions.forEach((key, value) -> {
+                if (value.contains(conn)) {
+                    value.remove(conn);
+                }
+            });
+            sendPlainMessage(requestId, conn, "Unsubscribed from all.");
+            logger.info("Session {} unsubscribed from all notifications.", conn.getRemoteAddress());
+            return;
+        }
+        else if (args.length == 2) {
+            //Invalid first standalone argument
+
+            sendError(requestId, conn, "Insufficient arguments");
+            logger.warn("Invalid message from {}: Insufficient arguments", conn.getRemoteAddress());
             return;
         }
 

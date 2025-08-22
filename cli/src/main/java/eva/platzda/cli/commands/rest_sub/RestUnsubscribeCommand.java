@@ -22,6 +22,10 @@ public class RestUnsubscribeCommand implements ConsoleCommand {
             return "Not enough arguments provided. See 'help rest' for more information.";
         }
 
+        if(args[0].equals("all")){
+            return subscriptionService.unsubscribeFrommAllTables();
+        }
+
         long id = 0;
 
         try {
@@ -30,6 +34,6 @@ public class RestUnsubscribeCommand implements ConsoleCommand {
             return "Please enter a valid restaurant ID.";
         }
 
-        return  subscriptionService.unsubscribeFromTable(id);
+        return subscriptionService.unsubscribeFromTable(id);
     }
 }
