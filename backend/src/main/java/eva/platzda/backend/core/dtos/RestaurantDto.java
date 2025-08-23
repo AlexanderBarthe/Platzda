@@ -27,7 +27,7 @@ public class RestaurantDto {
         this.tags = tags;
     }
 
-    public static RestaurantDto toDto(Restaurant r) {
+    public static RestaurantDto fromObject(Restaurant r) {
         if (r == null) return null;
 
         Long ownerId = (r.getOwner() == null) ? null : r.getOwner().getId();

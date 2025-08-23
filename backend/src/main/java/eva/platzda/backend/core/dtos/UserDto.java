@@ -23,7 +23,7 @@ public class UserDto {
         this.flags = flags;
     }
 
-    public static UserDto toDto(User user) {
+    public static UserDto fromObject(User user) {
         List<Long> flagIds = user.getFlags().stream()
                 .map(Restaurant::getId)
                 .toList();

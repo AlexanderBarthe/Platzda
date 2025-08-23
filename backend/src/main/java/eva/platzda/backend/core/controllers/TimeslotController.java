@@ -33,7 +33,7 @@ public class TimeslotController {
     public ResponseEntity<List<TimeslotDto>> getAllTimeslots() {
         List<Timeslot> timeslots = timeslotService.findAllTimeslots();
         List<TimeslotDto> timeslotDtos = timeslots.stream()
-                .map(TimeslotDto::toDto)
+                .map(TimeslotDto::fromObject)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(timeslotDtos);

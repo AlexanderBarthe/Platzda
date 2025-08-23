@@ -20,7 +20,7 @@ public class TimeslotDto {
         this.table = table;
     }
 
-    public static TimeslotDto toDto(Timeslot timeslot){
+    public static TimeslotDto fromObject(Timeslot timeslot){
         if(timeslot==null) return null;
 
         Long userId = (timeslot.getUser() == null) ? null : timeslot.getUser().getId();

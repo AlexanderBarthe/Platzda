@@ -6,6 +6,7 @@ import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.models.RestaurantTable;
 import eva.platzda.backend.core.services.RestaurantService;
 import eva.platzda.backend.core.services.TableService;
+import eva.platzda.backend.error_handling.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,34 +28,42 @@ public class TableController {
         this.tableService = tableService;
     }
 
-    @GetMapping("/get/{restaurantId}")
+    @GetMapping("/{restaurantId}")
     public ResponseEntity<List<TableDto>> getTables(@PathVariable Long restaurantId){
-        List<RestaurantTable> tables= tableService.findAllTablesRestaurant(restaurantId);
+        List<RestaurantTable> tables = tableService.findAllTablesRestaurant(restaurantId);
         List<TableDto> tableDtos = new ArrayList<>();
         for (RestaurantTable table:tables){
-            tableDtos.add(TableDto.toDto(table));
+            tableDtos.add(TableDto.fromObject(table));
         }
         return ResponseEntity.ok(tableDtos);
     }
 
-    @PostMapping("/create/{restaurantId}")
-    public ResponseEntity<TableDto> createTable(@PathVariable Long restaurantId, @RequestBody RestaurantTable restaurantTable){
-        Restaurant r = restaurantService.findById(restaurantId);
+    @PostMapping("/{restaurantId}")
+    public ResponseEntity<TableDto> createTable(@PathVariable Long restaurantId, @RequestBody TableDto creationRequestObject) {
+        Restaurant restaurant = restaurantService.findById(restaurantId);
 
-        restaurantTable.setRestaurant(r);
+        if (restaurant == null) throw new NotFoundException("Restaurant with id" + restaurantId + " does not exist");
+
+        RestaurantTable restaurantTable = new RestaurantTable();
+
+        restaurantTable.setRestaurant(restaurant);
+        restaurantTable.setId(null);
+        restaurantTable.setSize(creationRequestObject.getSize());
 
         RestaurantTable saved = tableService.createTable(restaurantTable);
-        return ResponseEntity.status(HttpStatus.CREATED).body(TableDto.toDto(saved));
+        return ResponseEntity.status(HttpStatus.CREATED).body(TableDto.fromObject(saved));
     }
 
-    @PutMapping("update/{tableId}")
+    @PutMapping("/{tableId}")
     public ResponseEntity<TableDto> updateTable(@PathVariable Long tableId, @RequestBody RestaurantTable table) {
         RestaurantTable oldTable = tableService.findById(tableId);
+
+        if(oldTable == null) throw new NotFoundException("Table with id" + tableId + " does not exist");
 
         oldTable.setSize(table.getSize());
         RestaurantTable saved = tableService.updateTable(oldTable);
 
-        return ResponseEntity.ok(TableDto.toDto(saved));
+        return ResponseEntity.ok(TableDto.fromObject(saved));
     }
 
     @DeleteMapping
@@ -64,10 +73,17 @@ public class TableController {
     }
 
 
-    @DeleteMapping("/{tableId}")
+    @DeleteMapping("/single/{tableId}")
     public ResponseEntity<Void> deleteTable(@PathVariable Long tableId) {
         if (tableService.findById(tableId) == null) return ResponseEntity.noContent().build();
         tableService.deleteTable(tableId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/restaurant/{restaurantId}")
+    public ResponseEntity<Void> deleteTableByRestaurant(@PathVariable Long restaurantId) {
+        if (restaurantService.findById(restaurantId) == null) return ResponseEntity.noContent().build();
+        tableService.deleteTablesOfRestaurant(restaurantId);
         return ResponseEntity.ok().build();
     }
 }

@@ -40,7 +40,7 @@ public class RestaurantController {
     public ResponseEntity<List<RestaurantDto>> getRestaurants() {
         return ResponseEntity.ok(restaurantService
                 .findAllRestaurants().stream()
-                .map(RestaurantDto::toDto)
+                .map(RestaurantDto::fromObject)
                 .collect(Collectors.toList()));
     }
 
@@ -57,7 +57,7 @@ public class RestaurantController {
             throw new NotFoundException("Restaurant wit id " + id + " does not exist");
         }
 
-        return ResponseEntity.ok(RestaurantDto.toDto(restaurant));
+        return ResponseEntity.ok(RestaurantDto.fromObject(restaurant));
     }
 
     /**
@@ -84,7 +84,7 @@ public class RestaurantController {
 
         Restaurant r = restaurantService.createRestaurant(restaurant);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(RestaurantDto.toDto(r));
+                .body(RestaurantDto.fromObject(r));
     }
 
     /**
@@ -107,7 +107,7 @@ public class RestaurantController {
         restaurant.setOwner(newOwner);
 
         Restaurant r = restaurantService.updateRestaurant(restaurant);
-        return ResponseEntity.ok(RestaurantDto.toDto(r));
+        return ResponseEntity.ok(RestaurantDto.fromObject(r));
     }
 
     /**
@@ -129,7 +129,7 @@ public class RestaurantController {
         restaurant.setOwner(oldRestaurant.getOwner());
 
         Restaurant r = restaurantService.updateRestaurant(restaurant);
-        return ResponseEntity.ok(RestaurantDto.toDto(r));
+        return ResponseEntity.ok(RestaurantDto.fromObject(r));
     }
 
     /**
@@ -172,7 +172,7 @@ public class RestaurantController {
         restaurant.addTag(request.getTag());
         Restaurant r = restaurantService.updateRestaurant(restaurant);
 
-        return ResponseEntity.ok(RestaurantDto.toDto(r));
+        return ResponseEntity.ok(RestaurantDto.fromObject(r));
     }
 
     /**
@@ -191,7 +191,7 @@ public class RestaurantController {
         restaurant.removeTag(request.getTag());
         Restaurant r = restaurantService.updateRestaurant(restaurant);
 
-        return ResponseEntity.ok(RestaurantDto.toDto(r));
+        return ResponseEntity.ok(RestaurantDto.fromObject(r));
     }
 
 }

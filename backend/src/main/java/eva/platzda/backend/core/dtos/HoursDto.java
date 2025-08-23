@@ -8,7 +8,7 @@ import java.time.LocalTime;
 public class HoursDto {
 
     private Long id;
-    private Long restaurantId;
+    private final Long restaurantId;
     private Integer weekday;
     private LocalTime openingTime;
     private LocalTime closingTime;
@@ -21,7 +21,7 @@ public class HoursDto {
         this.closingTime = closingTime;
     }
 
-    public static HoursDto toDto(OpeningHours hours) {
+    public static HoursDto fromObject(OpeningHours hours) {
         if(hours == null) return null;
 
         Long restaurantId = (hours.getRestaurant() == null) ? null : hours.getRestaurant().getId();
@@ -65,5 +65,9 @@ public class HoursDto {
 
     public void setClosingTime(LocalTime closingTime) {
         this.closingTime = closingTime;
+    }
+
+    public Long getRestaurantId() {
+        return restaurantId;
     }
 }

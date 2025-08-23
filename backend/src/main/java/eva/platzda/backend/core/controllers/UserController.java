@@ -35,7 +35,7 @@ public class UserController {
     public ResponseEntity<List<UserDto>> findAll() {
         return ResponseEntity.ok(userService.findAll()
                 .stream()
-                .map(UserDto::toDto)
+                .map(UserDto::fromObject)
                 .collect(Collectors.toList()));
     }
 
@@ -51,7 +51,7 @@ public class UserController {
         if(user == null) {
             throw new NotFoundException("User wit id " + id + " does not exist");
         }
-        return ResponseEntity.ok(UserDto.toDto(user));
+        return ResponseEntity.ok(UserDto.fromObject(user));
     }
 
     /**
@@ -66,7 +66,7 @@ public class UserController {
         user.setId(null);
         User u = userService.saveUser(user);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserDto.toDto(u));
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserDto.fromObject(u));
     }
 
     /**
@@ -86,7 +86,7 @@ public class UserController {
         if(user.getFlags() == null) user.setFlags(oldUser.getFlags());
 
         User u = userService.saveUser(user);
-        return ResponseEntity.ok(UserDto.toDto(u));
+        return ResponseEntity.ok(UserDto.fromObject(u));
     }
 
     /**
@@ -140,7 +140,7 @@ public class UserController {
     @PutMapping("/flags/{userId}/{restaurantId}")
     public ResponseEntity<UserDto> addFlagToUser(@PathVariable Long userId, @PathVariable Long restaurantId) {
         User u = userService.addFlag(userId, restaurantId);
-        return ResponseEntity.ok(UserDto.toDto(u));
+        return ResponseEntity.ok(UserDto.fromObject(u));
     }
 
     /**

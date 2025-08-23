@@ -1,0 +1,4 @@
+scripts:
+  hello:
+    - await 2
+    - help

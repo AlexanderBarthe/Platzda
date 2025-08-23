@@ -44,7 +44,7 @@ public class HoursController {
         List<OpeningHours> hours = hoursService.findByRestaurantId(restaurantId);
         List<HoursDto> hoursDtos = new ArrayList<>();
         for(OpeningHours h: hours){
-            hoursDtos.add(HoursDto.toDto(h));
+            hoursDtos.add(HoursDto.fromObject(h));
         }
         return ResponseEntity.ok(hoursDtos);
 
@@ -57,7 +57,7 @@ public class HoursController {
         hours.setRestaurant(r);
         OpeningHours saved = hoursService.createOpeningHours(hours);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(HoursDto.toDto(saved));
+        return ResponseEntity.status(HttpStatus.CREATED).body(HoursDto.fromObject(saved));
     }
 
     @PutMapping("/update/{restaurantId}")
@@ -70,7 +70,7 @@ public class HoursController {
 
         OpeningHours saved = hoursService.updateOpeningHours(oldHours);
 
-        return ResponseEntity.ok(HoursDto.toDto(saved));
+        return ResponseEntity.ok(HoursDto.fromObject(saved));
 
     }
 
