@@ -29,7 +29,10 @@ public class TimeslotService {
 
     public Timeslot findById(Long id) {return timeslotRepository.findById(id).orElse(null);}
 
-    public Timeslot createTimeslot(Timeslot timeslot) {return timeslotRepository.save(timeslot);}
+    public Timeslot createTimeslot(Timeslot timeslot) {
+        timeslot.setId(null);
+        return timeslotRepository.save(timeslot);
+    }
 
     public Timeslot updateTimeslot(Timeslot timeslot) {return timeslotRepository.save(timeslot);}
 

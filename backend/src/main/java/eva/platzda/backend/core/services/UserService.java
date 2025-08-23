@@ -51,6 +51,7 @@ public class UserService {
      * @return Saved User
      */
     public User saveUser(User user) {
+        user.setId(null);
         return userRepository.save(user);
     }
 

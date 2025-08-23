@@ -48,6 +48,7 @@ public class RestaurantService {
      * @return Created Restaurant entity
      */
     public Restaurant createRestaurant(Restaurant restaurant) {
+        restaurant.setId(null);
         return restaurantRepository.save(restaurant);
     }
 
