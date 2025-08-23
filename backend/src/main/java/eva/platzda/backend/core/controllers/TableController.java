@@ -47,7 +47,6 @@ public class TableController {
         RestaurantTable restaurantTable = new RestaurantTable();
 
         restaurantTable.setRestaurant(restaurant);
-        restaurantTable.setId(null);
         restaurantTable.setSize(creationRequestObject.getSize());
 
         RestaurantTable saved = tableService.createTable(restaurantTable);

@@ -3,6 +3,7 @@ package eva.platzda.backend.core.services;
 
 import eva.platzda.backend.core.models.OpeningHours;
 import eva.platzda.backend.core.repositories.HoursRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public class HoursService {
         this.hoursRepository = hoursRepository;
     }
 
-    public OpeningHours findByWeekday(int weekday, Long restaurantId) {return hoursRepository.findByWeekday(weekday, restaurantId);}
+    public List<OpeningHours> findByWeekday(int weekday, Long restaurantId) {return hoursRepository.findByWeekday(weekday, restaurantId);}
 
     public List<OpeningHours> findAllOpeningHours(){return hoursRepository.findAll();}
 
@@ -24,11 +25,23 @@ public class HoursService {
 
     public OpeningHours findById(Long Id) {return hoursRepository.findById(Id).orElseThrow(() -> new RuntimeException("OpeningHours not found with id " + Id));}
 
-    public OpeningHours createOpeningHours(OpeningHours hours) {return hoursRepository.save(hours);}
+    @Transactional
+    public OpeningHours createOpeningHours(OpeningHours hours) {
+        hours.setId(null);
+        return hoursRepository.save(hours);
+    }
 
+    @Transactional
     public OpeningHours updateOpeningHours(OpeningHours hours) {return hoursRepository.save(hours);}
 
+    @Transactional
     public void deleteOpeningHoursById(Long id) {hoursRepository.deleteById(id);}
 
+    @Transactional
+    public void deleteOpeningHoursOfRestaurant(Long restaurantId) {
+        hoursRepository.deleteByRestaurantId(restaurantId);
+    }
+
+    @Transactional
     public void deleteAllOpeningHours() {hoursRepository.deleteAll();}
 }

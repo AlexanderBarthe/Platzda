@@ -61,19 +61,22 @@ public class TimeslotGenerationService {
         List<Timeslot> slots = new ArrayList<>();
 
         DayOfWeek weekday = date.getDayOfWeek();
-        OpeningHours hours = hoursService.findByWeekday(weekday.getValue(), r.getId());
-        if (hours == null) {
+        List<OpeningHours> allHours = hoursService.findByWeekday(weekday.getValue(), r.getId());
+        if (allHours == null) {
             return new ArrayList<>();
         }
-        LocalDateTime current = LocalDateTime.of(date, hours.getOpeningTime());
-        LocalDateTime closingTime = LocalDateTime.of(date, hours.getClosingTime());
-        while (current.isBefore(closingTime)) {
-            LocalDateTime next = current.plusMinutes(15);
-            if (next.isAfter(closingTime)) {
-                break;
+
+        for(OpeningHours hours : allHours) {
+            LocalDateTime current = LocalDateTime.of(date, hours.getOpeningTime());
+            LocalDateTime closingTime = LocalDateTime.of(date, hours.getClosingTime());
+            while (current.isBefore(closingTime)) {
+                LocalDateTime next = current.plusMinutes(15);
+                if (next.isAfter(closingTime)) {
+                    break;
+                }
+                slots.add(new Timeslot(current, next));
+                current = next;
             }
-            slots.add(new Timeslot(current, next));
-            current = next;
         }
 
         return slots;

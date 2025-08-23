@@ -14,13 +14,10 @@ public class TableService {
 
     public TableService(TableRepository tableRepository) {this.tableRepository = tableRepository;}
 
-    @Transactional
     public List<RestaurantTable> findAllTablesAllRestaurants() {return tableRepository.findAll();}
 
-    @Transactional
     public List<RestaurantTable> findAllTablesRestaurant(Long restaurantId) {return tableRepository.findByRestaurantId(restaurantId);}
 
-    @Transactional
     public RestaurantTable findById(Long id) {return tableRepository.findById(id).orElseThrow(() -> new RuntimeException("Table not found with id " + id));}
 
     @Transactional

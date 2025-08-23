@@ -9,7 +9,7 @@ public class HoursDto {
 
     private Long id;
     private final Long restaurantId;
-    private Integer weekday;
+    private final Integer weekday;
     private LocalTime openingTime;
     private LocalTime closingTime;
 
@@ -45,10 +45,6 @@ public class HoursDto {
 
     public Integer getWeekday() {
         return weekday;
-    }
-
-    public void setWeekday(Integer weekday) {
-        this.weekday = weekday;
     }
 
     public LocalTime getOpeningTime() {
