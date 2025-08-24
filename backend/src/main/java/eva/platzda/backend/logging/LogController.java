@@ -27,6 +27,21 @@ public class LogController {
         return ResponseEntity.ok(logService.getLoggedEvent(id));
     }
 
+    @GetMapping("avg-time")
+    public ResponseEntity<Long> getAverageResponseTime() {
+        return ResponseEntity.ok(logService.getAvgResponseTime());
+    }
+
+    @GetMapping("med-time")
+    public ResponseEntity<Long> getMedianResponseTime() {
+        return ResponseEntity.ok(logService.getMedianResponseTime());
+    }
+
+    @GetMapping("max-time")
+    public ResponseEntity<Long> getMaxResponseTime() {
+        return ResponseEntity.ok(logService.getMaxResponseTime());
+    }
+
     @GetMapping("/success")
     public ResponseEntity<List<LoggedEvent>> getSuccessfulEvents() {
         return ResponseEntity.ok(logService.findAll().stream().filter(loggedEvent -> loggedEvent.getStatusCode() >= 200 && loggedEvent.getStatusCode() <= 299).toList());

@@ -38,18 +38,13 @@ public class LogCommand implements ConsoleCommand {
         String response;
 
         switch (arguments.peekFirst()) {
-            case "all" -> {
-                response = RestClient.sendRequest("logs", HttpMethod.GET, null);
-            }
-            case "success" -> {
-                response = RestClient.sendRequest("logs/success", HttpMethod.GET, null);
-            }
-            case "server-error" -> {
-                response = RestClient.sendRequest("logs/server-errors", HttpMethod.GET, null);
-            }
-            case "client-error" -> {
-                response = RestClient.sendRequest("logs/client-errors", HttpMethod.GET, null);
-            }
+            case "all" -> response = RestClient.sendRequest("logs", HttpMethod.GET, null);
+            case "avg-time" -> response = "Server internal average time: " + Float.valueOf(RestClient.sendRequest("logs/avg-time", HttpMethod.GET, null))/1000 + " ms";
+            case "med-time" -> response = "Server internal median time: " + Float.valueOf(RestClient.sendRequest("logs/med-time", HttpMethod.GET, null))/1000 + " ms";
+            case "max-time" -> response = "Server internal maximum time: " + Float.valueOf(RestClient.sendRequest("logs/max-time", HttpMethod.GET, null))/1000 + " ms";
+            case "success" -> response = RestClient.sendRequest("logs/success", HttpMethod.GET, null);
+            case "server-error" -> response = RestClient.sendRequest("logs/server-errors", HttpMethod.GET, null);
+            case "client-error" -> response = RestClient.sendRequest("logs/client-errors", HttpMethod.GET, null);
             case "flush" -> {
                 return RestClient.sendRequest("logs", HttpMethod.DELETE, null);
             }
@@ -57,7 +52,7 @@ public class LogCommand implements ConsoleCommand {
                 long id;
                 try {
                     id = Long.parseLong(arguments.pollFirst());
-                } catch (NumberFormatException e) {return "Invalid argment.";}
+                } catch (NumberFormatException e) {throw new IllegalArgumentException("Invalid argment");}
                 response = RestClient.sendRequest("logs/" + id, HttpMethod.GET, null);
             }
         }

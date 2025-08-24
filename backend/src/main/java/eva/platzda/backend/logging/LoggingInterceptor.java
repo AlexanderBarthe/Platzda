@@ -47,6 +47,6 @@ public class LoggingInterceptor implements HandlerInterceptor {
             loggedEvent = new LoggedEvent(request.getRequestURI(), request.getMethod(), response.getStatus(), duration, "");
         }
 
-        logService.addLoggedEvent(loggedEvent);
+        if(!request.getRequestURI().startsWith("/logs")) logService.addLoggedEvent(loggedEvent);
     }
 }

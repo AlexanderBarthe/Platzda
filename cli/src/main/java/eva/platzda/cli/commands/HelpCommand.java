@@ -89,8 +89,15 @@ public class HelpCommand implements ConsoleCommand {
                         Usage: log <options> <type>
                         Explanation: Receive or manage server saved log data
                         Use option --count to receive amount of logs saved of given type.
-                        Type can be 'all', 'client-error', 'server-error', 'success'.
-                        Use type 'flush' to clear the logs of the server.""";
+                        Type can be:
+                            all - All log entries
+                            client-error - Log entries with client error
+                            server-error - Log entries with server error
+                            success - All log entries
+                            avg-time - Average server internal response time
+                            med-time - Median server internal response time
+                            max-time - Maximum server internal response time
+                            flush - Delete server logs""";
             }
             default -> {
                 throw new IllegalArgumentException("No help page available for '" + args[0] + "'");

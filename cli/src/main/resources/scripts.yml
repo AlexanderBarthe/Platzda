@@ -2,3 +2,19 @@ scripts:
   hello:
     - await 2
     - help
+  rate50:
+    - user --silent create A
+    - log --silent flush
+    - time --silent --flush
+    - run --silent 500 --rate 50 --mt time --silent user --silent create A
+    - time --avg
+    - log avg-time
+    - time --med
+    - log med-time
+    - time --max
+    - log max-time
+    - time --silent --flush
+    - log --silent flush
+  correctness:
+    - log flush
+    -

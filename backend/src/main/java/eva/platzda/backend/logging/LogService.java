@@ -31,6 +31,28 @@ public class LogService {
         return loggedEventRepository.findAll();
     }
 
+    public Long getAvgResponseTime() {
+        if(loggedEventRepository.count() == 0) return 0L;
+        long adder = 0;
+        long value = 0;
+        for (LoggedEvent loggedEvent : findAll()) {
+            adder++;
+            value+= loggedEvent.getResponseTime_us();
+        }
+        return value / adder;
+    }
+
+    public Long getMedianResponseTime() {
+        if(loggedEventRepository.count() == 0) return 0L;
+        return findAll().stream().map(LoggedEvent::getResponseTime_us).sorted().toList().get(findAll().size()/2);
+    }
+
+    public Long getMaxResponseTime() {
+        if(loggedEventRepository.count() == 0) return 0L;
+        return findAll().stream().map(LoggedEvent::getResponseTime_us).max(Long::compareTo).get();
+    }
+
+
     @Async("loggingExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void addLoggedEvent(LoggedEvent loggedEvent) {
