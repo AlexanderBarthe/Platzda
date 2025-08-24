@@ -20,14 +20,14 @@ public class RestSubscribeCommand implements ConsoleCommand {
     @Override
     public String executeCommand(String[] args) {
         if (args.length == 0) {
-            return "Not enough arguments provided. See 'help rest' for more information.";
+            throw new IllegalArgumentException("Not enough arguments provided. See 'help rest' for more information.");
         }
 
         long id;
         try {
             id = Long.parseLong(args[0]);
         } catch (NumberFormatException e) {
-            return "Please enter a valid restaurant ID.";
+            throw new IllegalArgumentException("Invalid restaurant ID");
         }
 
         return subscriptionService.subscribeToTable(id);

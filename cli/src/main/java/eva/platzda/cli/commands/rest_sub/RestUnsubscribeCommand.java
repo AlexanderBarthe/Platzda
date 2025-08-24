@@ -19,7 +19,7 @@ public class RestUnsubscribeCommand implements ConsoleCommand {
     @Override
     public String executeCommand(String[] args) {
         if(args.length == 0){
-            return "Not enough arguments provided. See 'help rest' for more information.";
+            throw new IllegalArgumentException("Not enough arguments provided. See 'help rest' for more information.");
         }
 
         if(args[0].equals("all")){
@@ -31,7 +31,7 @@ public class RestUnsubscribeCommand implements ConsoleCommand {
         try {
             id = Long.parseLong(args[0]);
         } catch (NumberFormatException e) {
-            return "Please enter a valid restaurant ID.";
+            throw new IllegalArgumentException("Invalid restaurant ID");
         }
 
         return subscriptionService.unsubscribeFromTable(id);

@@ -25,7 +25,7 @@ public class UserCommand extends CommandExecutor implements ConsoleCommand {
     }
 
     @Override
-    public String executeCommand(String[] args) {
+    public String executeCommand(String[] args) throws Exception {
         return super.execute(args);
     }
 }

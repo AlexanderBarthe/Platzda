@@ -46,7 +46,6 @@ public abstract class RestClient {
             String returnHeader = switch (method) {
                 case PUT -> "Successfully updated:\n";
                 case POST -> "Successfully created:\n";
-                case DELETE -> "Successfully deleted";
                 default -> "";
             };
             try {

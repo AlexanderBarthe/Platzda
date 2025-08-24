@@ -18,7 +18,8 @@ public class ConsoleManager extends CommandExecutor {
                 new RunCommand(subscriptionService, scriptLoader),
                 new TimeCommand(subscriptionService, scriptLoader),
                 new ListScriptsCommand(scriptLoader),
-                new ScriptCommand(subscriptionService, scriptLoader)
+                new ScriptCommand(subscriptionService, scriptLoader),
+                new LogCommand()
         );
     }
 
@@ -40,7 +41,7 @@ public class ConsoleManager extends CommandExecutor {
 
         try {
             answer = execute(nextArgs);
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             System.out.println("An error occurred while executing command: " + e.getMessage());
         }
 

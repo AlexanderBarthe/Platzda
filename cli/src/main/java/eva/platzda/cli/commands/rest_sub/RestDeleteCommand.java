@@ -20,7 +20,7 @@ public class RestDeleteCommand implements ConsoleCommand {
             long id = Long.parseLong(args[0]);
             return RestClient.sendRequest("restaurants/" + id, HttpMethod.DELETE, null);
         } catch (NumberFormatException e) {
-            return "Please enter a valid restaurant ID.";
+            throw new IllegalArgumentException("Invalid restaurant id.");
         }
     }
 }

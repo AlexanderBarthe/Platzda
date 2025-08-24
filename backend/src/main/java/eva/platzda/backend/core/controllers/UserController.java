@@ -94,13 +94,13 @@ public class UserController {
      *
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<String> delete(@PathVariable Long id) {
         if(userService.findById(id) == null) {
             return ResponseEntity.noContent().build();
         }
         userService.deleteById(id);
-        
-        return ResponseEntity.ok().build();
+
+        return ResponseEntity.ok("User deleted");
     }
 
     /**
@@ -109,9 +109,9 @@ public class UserController {
      *
      */
     @DeleteMapping
-    public ResponseEntity<Void> deleteAll() {
+    public ResponseEntity<String> deleteAll() {
         userService.deleteAll();
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Users deleted");
     }
 
     /**
@@ -151,9 +151,9 @@ public class UserController {
      * @return Updated User
      */
     @DeleteMapping("/flags/{userId}/{restaurantId}")
-    public ResponseEntity<Void> deleteFlagFromUser(@PathVariable Long userId, @PathVariable Long restaurantId) {
+    public ResponseEntity<String> deleteFlagFromUser(@PathVariable Long userId, @PathVariable Long restaurantId) {
         userService.removeFlag(userId, restaurantId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Flag removed");
     }
 
 }

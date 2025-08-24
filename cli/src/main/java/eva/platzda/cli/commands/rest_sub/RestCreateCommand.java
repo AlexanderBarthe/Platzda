@@ -20,7 +20,7 @@ public class RestCreateCommand implements ConsoleCommand {
         try {
             userId = Long.parseLong(args[0]);
         } catch (NumberFormatException e) {
-            return "Please enter a valid user ID.";
+            throw new IllegalArgumentException("Invalid user id.");
         }
 
         String json = "{}";

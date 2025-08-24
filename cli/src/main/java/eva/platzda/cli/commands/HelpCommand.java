@@ -13,7 +13,7 @@ public class HelpCommand implements ConsoleCommand {
     }
 
     @Override
-    public String executeCommand(String[] args) {
+    public String executeCommand(String[] args) throws Exception {
 
         if(args.length == 0) {
             Map<String, String> manualDescriptions = new LinkedHashMap<>();
@@ -70,7 +70,7 @@ public class HelpCommand implements ConsoleCommand {
                         Using placeholder expressions might increase runtime of the command.""";
             }
             default -> {
-                return "No help page available for '" + args[0] + "'";
+                throw new IllegalArgumentException("No help page available for '" + args[0] + "'");
             }
         }
     }

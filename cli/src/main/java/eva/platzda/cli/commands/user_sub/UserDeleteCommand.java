@@ -14,14 +14,14 @@ public class UserDeleteCommand implements ConsoleCommand {
     @Override
     public String executeCommand(String[] args) {
         if(args.length == 0){
-            return "Not enough arguments provided. See 'help user' for more information.";
+            throw new IllegalArgumentException("Not enough arguments provided. See 'help user' for more information.");
         }
 
         try {
             long id = Long.parseLong(args[0]);
             return RestClient.sendRequest("users/" + id, HttpMethod.DELETE, null);
         } catch (NumberFormatException e) {
-            return "Please enter a valid user ID.";
+            throw new IllegalArgumentException("Invalid user ID.");
         }
 
     }

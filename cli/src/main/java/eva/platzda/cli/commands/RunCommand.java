@@ -44,7 +44,7 @@ public class RunCommand implements ConsoleCommand {
             arguments.removeFirst();
 
         } catch (NumberFormatException e) {
-            return "Please enter a valid number.";
+            throw new IllegalArgumentException("Invalid number.");
         }
 
         boolean multithreaded = false;
@@ -64,7 +64,7 @@ public class RunCommand implements ConsoleCommand {
                     if (value < 1) return "Rate must be >= 1.";
                     rateLimit = value;
                 } catch (NumberFormatException nfe) {
-                    return "Invalid rate value: " + amt;
+                    throw new IllegalArgumentException("Invalid rate value: " + amt);
                 }
             }
             else {
@@ -189,7 +189,9 @@ public class RunCommand implements ConsoleCommand {
             if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
                 pool.shutdownNow();
             }
-        } catch (InterruptedException ignored) {}
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Interrupted while waiting for tasks", e);
+        }
         finally {
             if (limiter != null) limiter.shutdown();
             if (!pool.isShutdown()) pool.shutdownNow();

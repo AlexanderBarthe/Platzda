@@ -66,23 +66,23 @@ public class TableController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> deleteAllTables(){
+    public ResponseEntity<String> deleteAllTables(){
         tableService.deleteAll();
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Tables deleted");
     }
 
 
     @DeleteMapping("/single/{tableId}")
-    public ResponseEntity<Void> deleteTable(@PathVariable Long tableId) {
+    public ResponseEntity<String> deleteTable(@PathVariable Long tableId) {
         if (tableService.findById(tableId) == null) return ResponseEntity.noContent().build();
         tableService.deleteTable(tableId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Table deleted");
     }
 
     @DeleteMapping("/restaurant/{restaurantId}")
-    public ResponseEntity<Void> deleteTableByRestaurant(@PathVariable Long restaurantId) {
+    public ResponseEntity<String> deleteTableByRestaurant(@PathVariable Long restaurantId) {
         if (restaurantService.findById(restaurantId) == null) return ResponseEntity.noContent().build();
         tableService.deleteTablesOfRestaurant(restaurantId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Tables deleted");
     }
 }

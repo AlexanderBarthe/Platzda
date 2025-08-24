@@ -44,11 +44,11 @@ public class ScriptCommand implements ConsoleCommand {
     @Override
     public String executeCommand(String[] args) {
         if(args.length == 0){
-            return "Not enough arguments provided. See 'help' for more information.";
+            throw new IllegalArgumentException("Not enough arguments provided. See 'help' for more information.");
         }
 
         if(!scriptLoader.hasScript(args[0])){
-            return "Script not found: " + args[0];
+            throw new IllegalArgumentException("Script not found: " + args[0]);
         }
 
         ConsoleManager consoleManager = new ConsoleManager(subscriptionService, scriptLoader);
@@ -103,7 +103,7 @@ public class ScriptCommand implements ConsoleCommand {
             try {
                 future.get();
             } catch (InterruptedException | ExecutionException e) {
-                return "An error occurred while executing the script: " + e.getMessage();
+                throw  new RuntimeException(e.getMessage());
             }
         }
 

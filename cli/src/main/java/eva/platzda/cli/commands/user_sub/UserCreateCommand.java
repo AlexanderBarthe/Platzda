@@ -14,7 +14,7 @@ public class UserCreateCommand implements ConsoleCommand {
     public String executeCommand(String[] args) {
 
         if(args.length == 0){
-            return "Not enough arguments provided. See 'help user' for more information.";
+            throw new IllegalArgumentException("Not enough arguments provided. See 'help user' for more information.");
         }
 
         String mergedArgs = String.join(" ", args);

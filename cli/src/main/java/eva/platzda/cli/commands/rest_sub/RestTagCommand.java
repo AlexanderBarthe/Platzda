@@ -15,7 +15,7 @@ public class RestTagCommand implements ConsoleCommand {
     @Override
     public String executeCommand(String[] args) {
         if(args.length <= 1){
-            return "Not enough arguments provided. See 'help rest' for more information.";
+            throw new IllegalArgumentException("Not enough arguments provided. See 'help rest' for more information.");
         }
 
         long restaurantId;
@@ -23,7 +23,7 @@ public class RestTagCommand implements ConsoleCommand {
         try {
             restaurantId = Long.parseLong(args[0]);
         } catch (NumberFormatException e) {
-            return "Please enter a valid restaurant ID.";
+            throw new IllegalArgumentException("Invalid restaurant ID");
         }
 
         String tag = String.join(" ", Arrays.copyOfRange(args, 1, args.length));

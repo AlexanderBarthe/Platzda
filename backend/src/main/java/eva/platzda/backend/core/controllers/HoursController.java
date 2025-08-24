@@ -101,23 +101,23 @@ public class HoursController {
     }
 
     @DeleteMapping("/single/{hoursId}")
-    public ResponseEntity<Void> deleteOpeningHours(@PathVariable Long hoursId) {
+    public ResponseEntity<String> deleteOpeningHours(@PathVariable Long hoursId) {
         if(hoursService.findById(hoursId) == null) return ResponseEntity.noContent().build();
         hoursService.deleteOpeningHoursById(hoursId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Opening hours deleted");
     }
 
     @DeleteMapping("/restaurant/{restaurantId}")
-    public ResponseEntity<Void> deleteByRestaurant(@PathVariable Long restaurantId) {
+    public ResponseEntity<String> deleteByRestaurant(@PathVariable Long restaurantId) {
         if(restaurantService.findById(restaurantId) == null) return ResponseEntity.noContent().build();
         hoursService.deleteOpeningHoursOfRestaurant(restaurantId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Opening hours deleted");
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> deleteAllOpeningHours(){
+    public ResponseEntity<String> deleteAllOpeningHours(){
         hoursService.deleteAllOpeningHours();
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Opening hours deleted");
     }
 
 

@@ -11,7 +11,7 @@ public abstract class CommandExecutor {
         registerCommands(commands);
     }
 
-    public String execute(String[] args) throws IllegalArgumentException {
+    public String execute(String[] args) throws Exception {
         if(args.length == 0) {
             throw new IllegalArgumentException("No arguments provided");
         }

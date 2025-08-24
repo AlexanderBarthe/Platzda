@@ -139,10 +139,10 @@ public class RestaurantController {
      * @param restaurantId Id of the restaurant to delete
      */
     @DeleteMapping("/{restaurantId}")
-    public ResponseEntity<Void> deleteRestaurant(@PathVariable Long restaurantId) {
+    public ResponseEntity<String> deleteRestaurant(@PathVariable Long restaurantId) {
         if(restaurantService.findById(restaurantId) == null) return ResponseEntity.noContent().build();
         restaurantService.deleteRestaurantById(restaurantId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Restaurant deleted");
     }
 
     /**
@@ -151,9 +151,9 @@ public class RestaurantController {
      *
      */
     @DeleteMapping
-    public ResponseEntity<Void> deleteAllRestaurants() {
+    public ResponseEntity<String> deleteAllRestaurants() {
         restaurantService.deleteAllRestaurants();
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Restaurants deleted");
     }
 
     /**
