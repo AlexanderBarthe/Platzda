@@ -72,7 +72,7 @@ public class ScriptCommand implements ConsoleCommand {
 
             }
             else {
-                consoleManager.runCommand(command);
+                consoleManager.runCommand(command, false);
             }
         }
 

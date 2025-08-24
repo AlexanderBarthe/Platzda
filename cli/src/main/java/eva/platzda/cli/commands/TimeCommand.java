@@ -29,7 +29,7 @@ public class TimeCommand implements ConsoleCommand {
 
         long start = System.currentTimeMillis();
 
-        executor.runCommand(command);
+        executor.runCommand(command, false);
 
         long end = System.currentTimeMillis();
         long time = end - start;

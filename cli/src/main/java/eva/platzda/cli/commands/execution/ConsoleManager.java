@@ -27,12 +27,12 @@ public class ConsoleManager extends CommandExecutor {
         Scanner input = new Scanner(System.in);
 
         while (true) {
-            runCommand(input.nextLine());
+            runCommand(input.nextLine(), false);
         }
 
     }
 
-    public void runCommand(String command) {
+    public void runCommand(String command, boolean silent) {
 
         String[] nextArgs =  command.split(" ");
 
@@ -44,7 +44,7 @@ public class ConsoleManager extends CommandExecutor {
             System.out.println("An error occurred while executing command: " + e.getMessage());
         }
 
-        System.out.println(answer);
+        if(!silent) System.out.println(answer);
     }
 
 }

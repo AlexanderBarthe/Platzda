@@ -36,44 +36,51 @@ public class RunCommand implements ConsoleCommand {
     @Override
     public String executeCommand(String[] args) {
 
-        if(args.length < 3) {
-            return "Not enough arguments provided. See 'help run' for more information.";
-        }
+        List<String> arguments = new ArrayList<>(Arrays.asList(args));
 
         int executionCount;
 
         try {
-            executionCount = Integer.parseInt(args[0]);
+            executionCount = Integer.parseInt(arguments.getFirst());
             if(executionCount < 1) throw new NumberFormatException();
+            arguments.removeFirst();
 
         } catch (NumberFormatException e) {
             return "Please enter a valid number.";
         }
 
-        boolean runParallel;
+        boolean multithreaded = false;
+        boolean silent = false;
 
-        if(args[1].equals("p") || args[1].equals("1") || args[1].equals("true") || args[1].equals("t")) {
-            runParallel = true;
+        while(!arguments.isEmpty() && arguments.getFirst().startsWith("--")) {
+            String option = arguments.getFirst().substring(2);
+            if(option.equals("silent")) {
+                silent = true;
+            }
+            else if(option.equals("mt")) {
+                multithreaded = true;
+            }
+            else {
+                return "Unknown option: " + option;
+            }
+            arguments.removeFirst();
+
         }
-        else if(args[1].equals("r") || args[1].equals("0") || args[1].equals("false")  || args[1].equals("f")) {
-            runParallel = false;
+
+        if(arguments.isEmpty()) return "Please enter a command.";
+
+        if(multithreaded) {
+            formatAndRunParallel(executionCount, silent, arguments.toArray(new String[0]), THREAD_COUNT, false);
         }
         else {
-            return "Please sepcify parellelisation";
-        }
-
-        if(runParallel) {
-            formatAndRunParallel(executionCount, Arrays.copyOfRange(args, 2, args.length), THREAD_COUNT, false);
-        }
-        else {
-            formatAndRun(executionCount, Arrays.copyOfRange(args, 2, args.length));
+            formatAndRun(executionCount, silent, arguments.toArray(new String[0]));
         }
 
         return "Execution finished!";
 
     }
 
-    public void formatAndRun(int executionCount, String[] args) {
+    public void formatAndRun(int executionCount, boolean silent, String[] args) {
         ConsoleManager consoleManager = new ConsoleManager(subscriptionService, scriptLoader);
 
         for (int i = 0; i < executionCount; i++) {
@@ -83,7 +90,7 @@ public class RunCommand implements ConsoleCommand {
             }
 
             // join and run the command as before (or pass processedArgs if runCommand accepts array)
-            consoleManager.runCommand(String.join(" ", processedArgs));
+            consoleManager.runCommand(String.join(" ", processedArgs), silent);
         }
     }
 
@@ -107,7 +114,7 @@ public class RunCommand implements ConsoleCommand {
      * @param threadPoolSize number of worker threads to use
      * @param serializeRunCommand if true, calls to consoleManager.runCommand(...) are synchronized
      */
-    public void formatAndRunParallel(int executionCount, String[] args, int threadPoolSize, boolean serializeRunCommand) {
+    public void formatAndRunParallel(int executionCount, boolean silent, String[] args, int threadPoolSize, boolean serializeRunCommand) {
         ConsoleManager consoleManager = new ConsoleManager(subscriptionService, scriptLoader);
 
         ExecutorService pool = Executors.newFixedThreadPool(Math.max(1, threadPoolSize));
@@ -122,7 +129,7 @@ public class RunCommand implements ConsoleCommand {
                     for (int a = 0; a < args.length; a++) {
                         processedArgs[a] = replaceBracketExpressionsUsingCache(args[a], idx);
                     }
-                    Runnable runCmd = () -> consoleManager.runCommand(String.join(" ", processedArgs));
+                    Runnable runCmd = () -> consoleManager.runCommand(String.join(" ", processedArgs), silent);
                     if (serializeRunCommand) {
                         // serialize calls to runCommand if it's not thread-safe
                         synchronized (consoleManager) {

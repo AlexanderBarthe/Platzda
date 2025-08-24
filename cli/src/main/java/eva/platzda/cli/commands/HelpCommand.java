@@ -21,7 +21,7 @@ public class HelpCommand implements ConsoleCommand {
             manualDescriptions.put("exit", "Close this CLI");
             manualDescriptions.put("user", "Commands for user management");
             manualDescriptions.put("rest", "Commands for restaurants management");
-            manualDescriptions.put("run <amount> <multithreading t/f> <command>", "Runs other commands multiple times");
+            manualDescriptions.put("run <amount> <options> <command>", "Runs other commands multiple times");
             manualDescriptions.put("time <command>", "Use to track runtime of the specified command");
             manualDescriptions.put("await <ids>", "Awaits notifications on table id. Only usable in scripts. Example for ids: 1-3,4,6-9,10");
             manualDescriptions.put("listscripts", "Gives a list of the available scripts to run");
@@ -61,9 +61,9 @@ public class HelpCommand implements ConsoleCommand {
             case "run" -> {
                 return """
                         ## Run Command ##
-                        Ussage: run <amount> <multithreaded> <command>
+                        Ussage: run <amount> <options> <command>
                         Explanation: Runs a command multiple times.
-                        For multithreading use 1, true or p for no multithreading user 0, false or r
+                        The modifiers are --silent for execution without output and --mt for multithreading.
                         The command is formatted like the single-ran commands.
                         You can use the iteration count in arguments with placeholder expressions, which can be mathematically formatted
                         Example: 'run 100 0 user create [x];[(x+1)%2]@mail.com' creates a user with the names from 0 to 99 and the email with the reversed parity of the name.
