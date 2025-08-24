@@ -29,4 +29,19 @@ public class LogController {
         return logService.getLoggedEvent(id);
     }
 
+    @GetMapping("/success")
+    public List<LoggedEvent> getSuccessfulEvents() {
+        return logService.findAll().stream().filter(loggedEvent -> loggedEvent.getStatusCode() >= 200 && loggedEvent.getStatusCode() <= 299).toList();
+    }
+
+    @GetMapping("/client-errors")
+    public List<LoggedEvent> getClientErrorEvents() {
+        return logService.findAll().stream().filter(loggedEvent -> loggedEvent.getStatusCode() >= 400 && loggedEvent.getStatusCode() <= 499).toList();
+    }
+
+    @GetMapping("/server-errors")
+    public List<LoggedEvent> getServerErrorEvents() {
+        return logService.findAll().stream().filter(loggedEvent -> loggedEvent.getStatusCode() >= 500).toList();
+    }
+
 }
