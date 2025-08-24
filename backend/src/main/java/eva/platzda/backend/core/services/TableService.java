@@ -2,8 +2,8 @@ package eva.platzda.backend.core.services;
 
 import eva.platzda.backend.core.models.RestaurantTable;
 import eva.platzda.backend.core.repositories.TableRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

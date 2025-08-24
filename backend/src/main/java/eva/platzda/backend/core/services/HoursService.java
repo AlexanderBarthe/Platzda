@@ -3,8 +3,8 @@ package eva.platzda.backend.core.services;
 
 import eva.platzda.backend.core.models.OpeningHours;
 import eva.platzda.backend.core.repositories.HoursRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package eva.platzda.backend.core.models;
+package eva.platzda.backend.logging;
 
 import jakarta.persistence.*;
 
@@ -25,24 +25,35 @@ public class LoggedEvent {
     private String eventType; //Get Request / Deletion / Notification etc
 
     @Column
-    private boolean success;
+    private Integer statusCode;
 
     @Column
-    private int responseTimeMs;
+    private Long responseTimeUs;
 
     @Column
     private String message;
 
     public LoggedEvent() {}
 
-    public LoggedEvent(Long id, LocalDateTime timestamp, String thread, String endpoint, String eventType, boolean success, int responseTimeMs, String message) {
+    public LoggedEvent(String endpoint, String eventType, Integer statusCode, long responseTimeUs, String message) {
+        this.id = null;
+        this.timestamp = LocalDateTime.now();
+        this.thread = Thread.currentThread().getName();
+        this.endpoint = endpoint;
+        this.eventType = eventType;
+        this.statusCode = statusCode;
+        this.responseTimeUs = responseTimeUs;
+        this.message = message;
+    }
+
+    public LoggedEvent(Long id, LocalDateTime timestamp, String thread, String endpoint, String eventType, Integer statusCode, long responseTimeUs, String message) {
         this.id = id;
         this.timestamp = timestamp;
         this.thread = thread;
         this.endpoint = endpoint;
         this.eventType = eventType;
-        this.success = success;
-        this.responseTimeMs = responseTimeMs;
+        this.statusCode = statusCode;
+        this.responseTimeUs = responseTimeUs;
         this.message = message;
     }
 
@@ -86,20 +97,20 @@ public class LoggedEvent {
         this.eventType = eventType;
     }
 
-    public boolean isSuccess() {
-        return success;
+    public int getStatusCode() {
+        return statusCode;
     }
 
-    public void setSuccess(boolean success) {
-        this.success = success;
+    public void setStatusCode(Integer success) {
+        this.statusCode = success;
     }
 
-    public int getResponseTime() {
-        return responseTimeMs;
+    public long getResponseTime() {
+        return responseTimeUs;
     }
 
-    public void setResponseTime(int responseTimeMs) {
-        this.responseTimeMs = responseTimeMs;
+    public void setResponseTime(Long responseTimeMs) {
+        this.responseTimeUs = responseTimeMs;
     }
 
     public String getMessage() {

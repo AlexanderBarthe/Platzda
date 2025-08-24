@@ -103,7 +103,7 @@ public class ScriptCommand implements ConsoleCommand {
             try {
                 future.get();
             } catch (InterruptedException | ExecutionException e) {
-                System.out.println("An error occurred while executing the script: " + e.getMessage());
+                return "An error occurred while executing the script: " + e.getMessage();
             }
         }
 

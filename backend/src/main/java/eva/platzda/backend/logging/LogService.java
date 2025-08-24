@@ -1,10 +1,13 @@
-package eva.platzda.backend.core.services;
+package eva.platzda.backend.logging;
 
-import eva.platzda.backend.core.models.LoggedEvent;
-import eva.platzda.backend.core.repositories.LoggedEventRepository;
-import jakarta.transaction.Transactional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -13,19 +16,30 @@ public class LogService {
 
     private final LoggedEventRepository loggedEventRepository;
 
+    private static final Logger log = LoggerFactory.getLogger(LogService.class);
+
     @Autowired
     public LogService(LoggedEventRepository loggedEventRepository) {
         this.loggedEventRepository = loggedEventRepository;
+    }
+
+    public LoggedEvent getLoggedEvent(Long eventId) {
+        return loggedEventRepository.getLoggedEventById(eventId);
     }
 
     public List<LoggedEvent> findAll() {
         return loggedEventRepository.findAll();
     }
 
-    @Transactional
+    @Async("loggingExecutor")
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void addLoggedEvent(LoggedEvent loggedEvent) {
-        loggedEvent.setId(null);
-        loggedEventRepository.save(loggedEvent);
+        try {
+            loggedEvent.setId(null);
+            loggedEventRepository.save(loggedEvent);
+        } catch (Exception e) {
+            log.warn("Async logging failed: {}", e.getMessage(), e);
+        }
     }
 
     @Transactional
