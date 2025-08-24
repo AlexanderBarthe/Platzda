@@ -6,9 +6,7 @@ import eva.platzda.cli.commands.execution.ConsoleManager;
 import eva.platzda.cli.commands.scripts.ScriptLoader;
 import eva.platzda.cli.notification_management.SubscriptionService;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,7 +34,7 @@ public class RunCommand implements ConsoleCommand {
     @Override
     public String executeCommand(String[] args) {
 
-        List<String> arguments = new ArrayList<>(Arrays.asList(args));
+        Deque<String> arguments = new ArrayDeque<>(Arrays.asList(args));
 
         int executionCount;
 
@@ -50,47 +48,65 @@ public class RunCommand implements ConsoleCommand {
         }
 
         boolean multithreaded = false;
-        boolean silent = false;
+        Integer rateLimit = null;
 
         while(!arguments.isEmpty() && arguments.getFirst().startsWith("--")) {
-            String option = arguments.getFirst().substring(2);
-            if(option.equals("silent")) {
-                silent = true;
-            }
-            else if(option.equals("mt")) {
+            String option = arguments.poll().substring(2);
+            if(option.equals("mt")) {
                 multithreaded = true;
+            }
+            else if (option.equals("rate")) {
+                // consume next token as amount
+                String amt = arguments.pollFirst();
+                if (amt == null) return "Option --rate requires a numeric argument.";
+                try {
+                    int value = Integer.parseInt(amt);
+                    if (value < 1) return "Rate must be >= 1.";
+                    rateLimit = value;
+                } catch (NumberFormatException nfe) {
+                    return "Invalid rate value: " + amt;
+                }
             }
             else {
                 return "Unknown option: " + option;
             }
-            arguments.removeFirst();
 
         }
 
         if(arguments.isEmpty()) return "Please enter a command.";
 
         if(multithreaded) {
-            formatAndRunParallel(executionCount, silent, arguments.toArray(new String[0]), THREAD_COUNT, false);
+            formatAndRunParallel(executionCount, rateLimit, arguments.toArray(new String[0]), THREAD_COUNT, false);
         }
         else {
-            formatAndRun(executionCount, silent, arguments.toArray(new String[0]));
+            formatAndRun(executionCount, rateLimit, arguments.toArray(new String[0]));
         }
 
         return "Execution finished!";
 
     }
 
-    public void formatAndRun(int executionCount, boolean silent, String[] args) {
+    public void formatAndRun(int executionCount, Integer rateLimit, String[] args) {
         ConsoleManager consoleManager = new ConsoleManager(subscriptionService, scriptLoader);
 
-        for (int i = 0; i < executionCount; i++) {
-            String[] processedArgs = new String[args.length];
-            for (int a = 0; a < args.length; a++) {
-                processedArgs[a] = replaceBracketExpressions(args[a], i);
-            }
+        TokenBucketRateLimiter limiter = null;
+        if (rateLimit != null) {
+            limiter = new TokenBucketRateLimiter(rateLimit);
+        }
 
-            // join and run the command as before (or pass processedArgs if runCommand accepts array)
-            consoleManager.runCommand(String.join(" ", processedArgs), silent);
+        try {
+            for (int i = 0; i < executionCount; i++) {
+                String[] processedArgs = new String[args.length];
+                for (int a = 0; a < args.length; a++) {
+                    processedArgs[a] = replaceBracketExpressions(args[a], i);
+                }
+
+                // rate-limit before actual run (if limiter != null)
+                if (limiter != null) limiter.acquire();
+                consoleManager.runCommand(String.join(" ", processedArgs));
+            }
+        } finally {
+            if (limiter != null) limiter.shutdown();
         }
     }
 
@@ -107,64 +123,76 @@ public class RunCommand implements ConsoleCommand {
     }
 
     /**
-     * Parallel version with explicit control.
+     * Parallel version with explicit control and optional rate-limiter.
      *
      * @param executionCount number of iterations (i from 0..executionCount-1)
+     * @param rateLimit if non-null, global limit of runCommand() calls per second
      * @param args command arguments (may contain [expr] occurrences)
      * @param threadPoolSize number of worker threads to use
      * @param serializeRunCommand if true, calls to consoleManager.runCommand(...) are synchronized
      */
-    public void formatAndRunParallel(int executionCount, boolean silent, String[] args, int threadPoolSize, boolean serializeRunCommand) {
+    public void formatAndRunParallel(int executionCount, Integer rateLimit, String[] args, int threadPoolSize, boolean serializeRunCommand) {
         ConsoleManager consoleManager = new ConsoleManager(subscriptionService, scriptLoader);
 
         ExecutorService pool = Executors.newFixedThreadPool(Math.max(1, threadPoolSize));
         List<Future<?>> futures = new ArrayList<>(executionCount);
 
-        for (int i = 0; i < executionCount; i++) {
-            final int idx = i;
-            // submit task for this iteration
-            futures.add(pool.submit(() -> {
-                try {
-                    String[] processedArgs = new String[args.length];
-                    for (int a = 0; a < args.length; a++) {
-                        processedArgs[a] = replaceBracketExpressionsUsingCache(args[a], idx);
-                    }
-                    Runnable runCmd = () -> consoleManager.runCommand(String.join(" ", processedArgs), silent);
-                    if (serializeRunCommand) {
-                        // serialize calls to runCommand if it's not thread-safe
-                        synchronized (consoleManager) {
-                            runCmd.run();
-                        }
-                    } else {
-                        runCmd.run();
-                    }
-                } catch (RuntimeException ex) {
-                    // rethrow to surface in Future.get()
-                    throw ex;
-                }
-            }));
+        TokenBucketRateLimiter limiter;
+        if (rateLimit != null) {
+            limiter = new TokenBucketRateLimiter(rateLimit);
+        } else {
+            limiter = null;
         }
 
-        // wait for all tasks and propagate exceptions (if any)
-        pool.shutdown();
         try {
-            for (Future<?> f : futures) {
-                f.get(); // will throw ExecutionException if any task failed
+            for (int i = 0; i < executionCount; i++) {
+                final int idx = i;
+                futures.add(pool.submit(() -> {
+                    try {
+                        String[] processedArgs = new String[args.length];
+                        for (int a = 0; a < args.length; a++) {
+                            processedArgs[a] = replaceBracketExpressionsUsingCache(args[a], idx);
+                        }
+                        Runnable runCmd = () -> consoleManager.runCommand(String.join(" ", processedArgs));
+
+                        // Acquire rate permit if limiter present — this blocks the worker thread until allowed.
+                        if (limiter != null) limiter.acquire();
+
+                        if (serializeRunCommand) {
+                            synchronized (consoleManager) {
+                                runCmd.run();
+                            }
+                        } else {
+                            runCmd.run();
+                        }
+                    } catch (RuntimeException ex) {
+                        throw ex;
+                    }
+                }));
             }
-            // optionally wait termination (should be almost immediate after all futures done)
-            if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
-                // if still not terminated, force shutdown
+
+            // wait for all tasks and propagate exceptions (if any)
+            pool.shutdown();
+            for (Future<?> f : futures) {
+                try {
+                    f.get(); // will throw ExecutionException if any task failed
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Interrupted while waiting for tasks", ie);
+                } catch (ExecutionException ee) {
+                    Throwable cause = ee.getCause();
+                    if (cause instanceof RuntimeException) throw (RuntimeException) cause;
+                    else throw new RuntimeException("Task failed", cause);
+                }
+            }
+
+            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
                 pool.shutdownNow();
             }
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-            pool.shutdownNow();
-            throw new RuntimeException("Interrupted while waiting for tasks", ie);
-        } catch (ExecutionException ee) {
-            // unwrap and rethrow cause for clarity
-            Throwable cause = ee.getCause();
-            if (cause instanceof RuntimeException) throw (RuntimeException) cause;
-            else throw new RuntimeException("Task failed", cause);
+        } catch (InterruptedException ignored) {}
+        finally {
+            if (limiter != null) limiter.shutdown();
+            if (!pool.isShutdown()) pool.shutdownNow();
         }
     }
 
@@ -181,6 +209,58 @@ public class RunCommand implements ConsoleCommand {
         }
         m.appendTail(sb);
         return sb.toString();
+    }
+
+    static class TokenBucketRateLimiter {
+        private final int ratePerSecond;
+        private final Semaphore permits;
+        private final ScheduledExecutorService refiller;
+        private final int capacity;
+
+        public TokenBucketRateLimiter(int ratePerSecond) {
+            this.ratePerSecond = Math.max(1, ratePerSecond);
+            this.capacity = this.ratePerSecond; // max burst = rate
+            this.permits = new Semaphore(0);
+            this.refiller = Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "rate-refill");
+                t.setDaemon(true);
+                return t;
+            });
+            // refill every 1 second with `rate` permits (cap at capacity)
+            refiller.scheduleAtFixedRate(this::refill, 0, 1, TimeUnit.SECONDS);
+        }
+
+        private void refill() {
+            int toRelease;
+            synchronized (permits) {
+                int available = permits.availablePermits();
+                toRelease = capacity - available;
+                if (toRelease > 0) {
+                    // release up to ratePerSecond but not exceeding capacity
+                    int releaseCount = Math.min(ratePerSecond, toRelease);
+                    permits.release(releaseCount);
+                }
+            }
+        }
+
+        /**
+         * Blocks until a permit is available.
+         */
+        public void acquire() {
+            try {
+                permits.acquire();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Interrupted while waiting for rate permit", e);
+            }
+        }
+
+        /**
+         * Shutdown the refill thread.
+         */
+        public void shutdown() {
+            refiller.shutdownNow();
+        }
     }
 
 }

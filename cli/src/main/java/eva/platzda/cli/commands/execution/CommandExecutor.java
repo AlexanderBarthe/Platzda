@@ -18,6 +18,12 @@ public abstract class CommandExecutor {
         if(!commandKeys.containsKey(args[0])) {
             throw new IllegalArgumentException("No such command: " + args[0]);
         }
+
+        if(args.length > 2 && args[1].equals("--silent")) {
+            commandKeys.get(args[0]).executeCommand(Arrays.copyOfRange(args, 2, args.length));
+            return null;
+        }
+
         return commandKeys.get(args[0]).executeCommand(Arrays.copyOfRange(args, 1, args.length));
     }
 

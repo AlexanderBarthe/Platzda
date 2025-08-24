@@ -1,25 +1,39 @@
 package eva.platzda.cli.commands.scripts;
 
-import eva.platzda.cli.ExpressionEvaluator;
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.commands.execution.ConsoleManager;
 import eva.platzda.cli.notification_management.NotificationReceiver;
 import eva.platzda.cli.notification_management.SubscriptionService;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class ScriptCommand implements ConsoleCommand {
 
     private SubscriptionService subscriptionService;
     private ScriptLoader scriptLoader;
 
+    private static int timeoutSeconds;
+
+    //Scheduler for timeouts
+    private static final ScheduledExecutorService TIMEOUT_SCHEDULER =
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "script-timeout-scheduler");
+                t.setDaemon(true);
+                return t;
+            });
+
+
     public ScriptCommand(SubscriptionService subscriptionService, ScriptLoader scriptLoader) {
         this.subscriptionService = subscriptionService;
         this.scriptLoader = scriptLoader;
+
+        try {
+            timeoutSeconds = Integer.parseInt(Dotenv.load().get("await-timeout"));
+            if(timeoutSeconds <= 0) timeoutSeconds = 30;
+        } catch (NumberFormatException e) {timeoutSeconds = 30;}
+
     }
 
     @Override
@@ -54,6 +68,15 @@ public class ScriptCommand implements ConsoleCommand {
 
                     CompletableFuture<String> future = new CompletableFuture<>();
 
+                    //schedule a timeout that completes the future exceptionally after TIMEOUT_SECONDS
+                    ScheduledFuture<?> timeoutTask = TIMEOUT_SCHEDULER.schedule(
+                            () -> future.completeExceptionally(new TimeoutException(
+                                    "Await timed out after " + timeoutSeconds + " seconds for id " + awaitedId)),
+                            timeoutSeconds, TimeUnit.SECONDS);
+
+                    //cancel the scheduled timeout if the future completes before timeout
+                    future.whenComplete((res, ex) -> timeoutTask.cancel(false));
+
                     NotificationReceiver receiver = new NotificationReceiver(awaitedId, "notification", line -> {
                         if (line == null) return;
 
@@ -72,7 +95,7 @@ public class ScriptCommand implements ConsoleCommand {
 
             }
             else {
-                consoleManager.runCommand(command, false);
+                consoleManager.runCommand(command);
             }
         }
 
@@ -80,7 +103,7 @@ public class ScriptCommand implements ConsoleCommand {
             try {
                 future.get();
             } catch (InterruptedException | ExecutionException e) {
-                System.out.println("An error occurred while executing the script command.");
+                System.out.println("An error occurred while executing the script: " + e.getMessage());
             }
         }
 

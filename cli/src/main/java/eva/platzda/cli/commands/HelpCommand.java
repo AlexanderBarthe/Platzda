@@ -63,7 +63,7 @@ public class HelpCommand implements ConsoleCommand {
                         ## Run Command ##
                         Ussage: run <amount> <options> <command>
                         Explanation: Runs a command multiple times.
-                        The modifiers are --silent for execution without output and --mt for multithreading.
+                        Options are --mt for multithreading and --rate <executions per second> to rate limit to a specific number.
                         The command is formatted like the single-ran commands.
                         You can use the iteration count in arguments with placeholder expressions, which can be mathematically formatted
                         Example: 'run 100 0 user create [x];[(x+1)%2]@mail.com' creates a user with the names from 0 to 99 and the email with the reversed parity of the name.
