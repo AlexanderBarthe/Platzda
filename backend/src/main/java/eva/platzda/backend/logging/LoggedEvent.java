@@ -105,7 +105,7 @@ public class LoggedEvent {
         this.statusCode = success;
     }
 
-    public long getResponseTime() {
+    public long getResponseTime_us() {
         return responseTimeUs;
     }
 

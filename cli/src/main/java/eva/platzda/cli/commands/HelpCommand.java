@@ -17,15 +17,16 @@ public class HelpCommand implements ConsoleCommand {
 
         if(args.length == 0) {
             Map<String, String> manualDescriptions = new LinkedHashMap<>();
-            manualDescriptions.put("help <subpage>", "Help pages");
+            manualDescriptions.put("help <command>", "Help pages");
             manualDescriptions.put("exit", "Close this CLI");
             manualDescriptions.put("user", "Commands for user management");
             manualDescriptions.put("rest", "Commands for restaurants management");
             manualDescriptions.put("run <amount> <options> <command>", "Runs other commands multiple times");
-            manualDescriptions.put("time <command>", "Use to track runtime of the specified command");
+            manualDescriptions.put("time <command | option>", "Use to track runtime of the specified command or receive stat data");
             manualDescriptions.put("await <ids>", "Awaits notifications on table id. Only usable in scripts. Example for ids: 1-3,4,6-9,10");
             manualDescriptions.put("listscripts", "Gives a list of the available scripts to run");
             manualDescriptions.put("script <name>", "Runs given script");
+            manualDescriptions.put("log <option> <type>", "Receive or manage server saved log data");
             return "## List of commands ##\n\n" + formatManuals(manualDescriptions);
         }
 
@@ -61,13 +62,35 @@ public class HelpCommand implements ConsoleCommand {
             case "run" -> {
                 return """
                         ## Run Command ##
-                        Ussage: run <amount> <options> <command>
+                        Usage: run <amount> <options> <command>
                         Explanation: Runs a command multiple times.
                         Options are --mt for multithreading and --rate <executions per second> to rate limit to a specific number.
                         The command is formatted like the single-ran commands.
                         You can use the iteration count in arguments with placeholder expressions, which can be mathematically formatted
                         Example: 'run 100 0 user create [x];[(x+1)%2]@mail.com' creates a user with the names from 0 to 99 and the email with the reversed parity of the name.
                         Using placeholder expressions might increase runtime of the command.""";
+            }
+            case "time" -> {
+                return """
+                        ## Time Command ##
+                        Usage: time <command | option>
+                        Explanation: Use to track runtime of the specified command or receive stat data.
+                        Simple use: time <command> to give out and store time the command needed.
+                        Options are:
+                            --avg: Return the avg of stored times
+                            --med: Return the median of stored times
+                            --max: Return the maximum of stored times
+                            --flush: Delete all stored times
+                        """;
+            }
+            case "log" -> {
+                return """
+                        ## Log Command ##
+                        Usage: log <options> <type>
+                        Explanation: Receive or manage server saved log data
+                        Use option --count to receive amount of logs saved of given type.
+                        Type can be 'all', 'client-error', 'server-error', 'success'.
+                        Use type 'flush' to clear the logs of the server.""";
             }
             default -> {
                 throw new IllegalArgumentException("No help page available for '" + args[0] + "'");

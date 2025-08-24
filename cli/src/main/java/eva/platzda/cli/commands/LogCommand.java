@@ -29,7 +29,7 @@ public class LogCommand implements ConsoleCommand {
                 counting = true;
             }
             else {
-                return "Unknown option: " + option;
+                throw new IllegalArgumentException("Unknown option: " + option);
             }
         }
 
