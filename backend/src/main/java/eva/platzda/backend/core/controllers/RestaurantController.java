@@ -88,11 +88,11 @@ public class RestaurantController {
     public ResponseEntity<RestaurantDto> createRestaurant(@PathVariable Long ownerId, @RequestBody Restaurant restaurant) {
         restaurant.setId(null);
         if(restaurant.getAddress() == null) restaurant.setAddress("");
-        if(restaurant.getTimeSlotDuration() == null) restaurant.setTimeSlotDuration(90);
+        if(restaurant.getTimeSlotDuration() == null) restaurant.setTimeSlotDuration(6);
 
         User owner = userService.findById(ownerId);
         if(owner == null) {
-            throw new NotFoundException("User wit id " + ownerId + " does not exist");
+            throw new NotFoundException("User with id " + ownerId + " does not exist");
         }
         else {
             restaurant.setOwner(owner);

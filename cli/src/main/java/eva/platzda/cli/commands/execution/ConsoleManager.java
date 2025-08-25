@@ -19,7 +19,8 @@ public class ConsoleManager extends CommandExecutor {
                 new TimeCommand(subscriptionService, scriptLoader),
                 new ListScriptsCommand(scriptLoader),
                 new ScriptCommand(subscriptionService, scriptLoader),
-                new LogCommand()
+                new LogCommand(),
+                new ResvCommand(subscriptionService)
         );
     }
 
