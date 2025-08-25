@@ -19,10 +19,6 @@ public class TimeslotService {
         this.timeslotRepository = timeslotRepository;
     }
 
-    /* wat fehlt:
-    freie Zeitslots richtig finden, pro tag
-    zeitslot buchen
-    */
     public List<Timeslot> findAllTimeslots(){return timeslotRepository.findAll();}
 
     public List<Timeslot> findAllFreeTimeslots() {return timeslotRepository.findFreeTimeslots();}

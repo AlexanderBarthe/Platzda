@@ -25,7 +25,7 @@ public class Restaurant {
     private User owner;
 
     @Column
-    private Integer timeSlotDuration;
+    private Integer timeSlotDuration; //Wert * 15 min = gesamte Reservierungszeit
 
 
     public Restaurant() {
