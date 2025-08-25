@@ -57,6 +57,7 @@ public class HelpCommand implements ConsoleCommand {
                 manualDescriptions.put("sub <restaurant_id>", "Subscribes to updates of tables of a restaurant");
                 manualDescriptions.put("unsub <restaurant_id>", "Unsubscribes from updates of tables of a restaurant");
                 manualDescriptions.put("get-subs", "Get list of subscribed restaurants");
+                manualDescriptions.put("search <taglist>", "Search for restaurants by tags. sperate tags by ','.");
                 return "## List of subcommands for 'rest' ##\n\n" + formatManuals(manualDescriptions);
             }
             case "run" -> {
@@ -97,6 +98,7 @@ public class HelpCommand implements ConsoleCommand {
                             avg-time - Average server internal response time
                             med-time - Median server internal response time
                             max-time - Maximum server internal response time
+                            stats <endpoint> - Return usage stats of the endpoint
                             flush - Delete server logs""";
             }
             default -> {
