@@ -54,7 +54,7 @@ public class TableController {
     }
 
     @PutMapping("/{tableId}")
-    public ResponseEntity<TableDto> updateTable(@PathVariable Long tableId, @RequestBody RestaurantTable table) {
+    public ResponseEntity<TableDto> updateTable(@PathVariable Long tableId, @RequestBody TableDto table) {
         RestaurantTable oldTable = tableService.findById(tableId);
 
         if(oldTable == null) throw new NotFoundException("Table with id" + tableId + " does not exist");
