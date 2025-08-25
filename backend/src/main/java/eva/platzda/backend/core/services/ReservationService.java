@@ -23,19 +23,20 @@ public class ReservationService {
     private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
     private final HoursRepository hoursRepository;
-
-    private static final int RES_SLOTS = 6; // jede Reservierung gilt für 90 min (6 Slots)
+    private final RestaurantRepository restaurantRepository;
 
     public ReservationService(TimeslotRepository timeslotRepository,
                               TableRepository tableRepository,
                               UserRepository userRepository,
                               ReservationRepository reservationRepository,
-                              HoursRepository hoursRepository) {
+                              HoursRepository hoursRepository,
+                              RestaurantRepository restaurantRepository) {
         this.timeslotRepository = timeslotRepository;
         this.tableRepository = tableRepository;
         this.userRepository = userRepository;
         this.reservationRepository = reservationRepository;
         this.hoursRepository = hoursRepository;
+        this.restaurantRepository = restaurantRepository;
     }
 
     private boolean isContinuous(List<Timeslot> window) {
@@ -59,8 +60,10 @@ public class ReservationService {
 
         List<TimeWindow> windows = new ArrayList<>();
 
-        for (int i = 0; i <= ts.size() - RES_SLOTS; i++) {
-            List<Timeslot> window = ts.subList(i, i + RES_SLOTS);
+        int res_slots = table.getRestaurant().getTimeSlotDuration();
+
+        for (int i = 0; i <= ts.size() - res_slots; i++) {
+            List<Timeslot> window = ts.subList(i, i + res_slots);
             boolean allFree = window.stream().allMatch(s -> s.getUser() == null);
             if (allFree && isContinuous(window)) {
                 Timeslot first = window.get(0);
@@ -123,6 +126,8 @@ public class ReservationService {
 
         tables.sort(Comparator.comparing(RestaurantTable::getSize).reversed());
 
+        int res_slots = restaurantRepository.getReferenceById(restaurantId).getTimeSlotDuration();
+
         int assigned = 0;
         List<Reservation> reservations = new ArrayList<>();
 
@@ -130,7 +135,7 @@ public class ReservationService {
             if (assigned >= guests) break;
 
             List<Timeslot> slots = timeslotRepository.findSlotsForUpdate(table, start, end);
-            if (slots.size() < RES_SLOTS) continue;
+            if (slots.size() < res_slots) continue;
 
             boolean allFree = slots.stream().allMatch(s -> s.getUser() == null);
             if (!allFree) continue;
