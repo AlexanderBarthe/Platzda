@@ -1,5 +1,6 @@
 package eva.platzda.backend.logging;
 
+import eva.platzda.backend.core.dtos.StringRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -56,6 +57,12 @@ public class LogController {
     public ResponseEntity<List<LoggedEvent>> getServerErrorEvents() {
         return ResponseEntity.ok(logService.findAll().stream().filter(loggedEvent -> loggedEvent.getStatusCode() >= 500 && loggedEvent.getStatusCode() <= 599).toList());
     }
+
+    @PostMapping("/endpoint-ussage")
+    public ResponseEntity<String> getEndpointUsage(@RequestBody StringRequest endpoint) {
+        return ResponseEntity.ok(logService.getEndpointUssage(endpoint.getString()));
+    }
+
 
     @DeleteMapping
     public ResponseEntity<String> deleteAll() {

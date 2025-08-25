@@ -28,7 +28,7 @@ public class RestTagCommand implements ConsoleCommand {
 
         String tag = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
 
-        String json = "{ \"tag\": \"" + tag + "\" }";
+        String json = "{ \"string\": \"" + tag + "\" }";
 
         return RestClient.sendRequest("restaurants/" + restaurantId + "/tag", HttpMethod.PUT, json);
 

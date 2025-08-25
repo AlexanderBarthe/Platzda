@@ -28,7 +28,7 @@ public class RestUntagCommand implements ConsoleCommand {
 
         String tag = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
 
-        String json = "{ \"tag\": \"" + tag + "\" }";
+        String json = "{ \"string\": \"" + tag + "\" }";
 
         return RestClient.sendRequest("restaurants/" + restaurantId + "/untag", HttpMethod.PUT, json);
 

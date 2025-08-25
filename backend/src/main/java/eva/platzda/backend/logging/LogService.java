@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -50,6 +51,32 @@ public class LogService {
     public Long getMaxResponseTime() {
         if(loggedEventRepository.count() == 0) return 0L;
         return findAll().stream().map(LoggedEvent::getResponseTime_us).max(Long::compareTo).get();
+    }
+
+    public String getEndpointUssage(String endpoint) {
+        List<LoggedEvent> eventsOnEndpoint = findAll().stream().filter(log -> log.getEndpoint().equals(endpoint)).toList();
+
+        int requestsPastMinute = 0;
+        int requestsPastHour = 0;
+        int requestsPastDay = 0;
+
+        LocalDateTime now = LocalDateTime.now();
+
+        for (LoggedEvent loggedEvent : eventsOnEndpoint) {
+
+            LocalDateTime eventTime = loggedEvent.getTimestamp();
+
+            if(now.minusMinutes(1).isBefore(eventTime)) requestsPastMinute++;
+            if(now.minusHours(1).isBefore(eventTime)) requestsPastHour++;
+            if(now.minusDays(1).isBefore(eventTime)) requestsPastDay++;
+        }
+
+        String answer = "Requests past minute: " + requestsPastMinute + "\n"
+                + "Requests past hour: " + requestsPastHour + "\n"
+                + "Requests past day: " + requestsPastDay;
+
+        return answer;
+
     }
 
 

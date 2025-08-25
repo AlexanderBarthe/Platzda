@@ -1,7 +1,7 @@
 package eva.platzda.backend.core.controllers;
 
 import eva.platzda.backend.core.dtos.RestaurantDto;
-import eva.platzda.backend.core.dtos.TagRequest;
+import eva.platzda.backend.core.dtos.StringRequest;
 import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.models.User;
 import eva.platzda.backend.core.services.RestaurantService;
@@ -66,10 +66,10 @@ public class RestaurantController {
      *
      */
     @PostMapping("/search")
-    public ResponseEntity<List<RestaurantDto>> getRestaurantsByTags(@RequestBody TagRequest tagRequest) {
+    public ResponseEntity<List<RestaurantDto>> getRestaurantsByTags(@RequestBody StringRequest stringRequest) {
         return ResponseEntity.ok(
                 restaurantService
-                        .findByTags(tagRequest.getTag())
+                        .findByTags(stringRequest.getString())
                         .stream()
                         .map(RestaurantDto::fromObject)
                         .collect(Collectors.toList()));
@@ -181,11 +181,11 @@ public class RestaurantController {
      * @return Updated Restaurant
      */
     @PutMapping("{restaurantId}/tag")
-    public ResponseEntity<RestaurantDto> addTag(@PathVariable Long restaurantId, @RequestBody TagRequest request) {
+    public ResponseEntity<RestaurantDto> addTag(@PathVariable Long restaurantId, @RequestBody StringRequest request) {
         Restaurant restaurant = restaurantService.findById(restaurantId);
         if(restaurant == null) throw new NotFoundException("Restaurant wit id " + restaurantId + " does not exist");
 
-        restaurant.addTag(request.getTag());
+        restaurant.addTag(request.getString());
         Restaurant r = restaurantService.updateRestaurant(restaurant);
 
         return ResponseEntity.ok(RestaurantDto.fromObject(r));
@@ -200,11 +200,11 @@ public class RestaurantController {
      * @return Updated Restaurant
      */
     @PutMapping("{restaurantId}/untag")
-    public ResponseEntity<RestaurantDto> deleteTag(@PathVariable Long restaurantId, @RequestBody TagRequest request) {
+    public ResponseEntity<RestaurantDto> deleteTag(@PathVariable Long restaurantId, @RequestBody StringRequest request) {
         Restaurant restaurant = restaurantService.findById(restaurantId);
         if(restaurant == null) throw new NotFoundException("Restaurant wit id " + restaurantId + " does not exist");
 
-        restaurant.removeTag(request.getTag());
+        restaurant.removeTag(request.getString());
         Restaurant r = restaurantService.updateRestaurant(restaurant);
 
         return ResponseEntity.ok(RestaurantDto.fromObject(r));

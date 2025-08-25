@@ -16,7 +16,7 @@ public class RestSearchCommand implements ConsoleCommand {
 
         String searchedTags = String.join(" ", args);
 
-        String json = "{\"tag\":\"" + searchedTags + "\"}";
+        String json = "{\"string\":\"" + searchedTags + "\"}";
 
         return RestClient.sendRequest("restaurants/search", HttpMethod.POST, json);
 

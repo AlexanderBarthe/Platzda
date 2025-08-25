@@ -45,6 +45,13 @@ public class LogCommand implements ConsoleCommand {
             case "success" -> response = RestClient.sendRequest("logs/success", HttpMethod.GET, null);
             case "server-error" -> response = RestClient.sendRequest("logs/server-errors", HttpMethod.GET, null);
             case "client-error" -> response = RestClient.sendRequest("logs/client-errors", HttpMethod.GET, null);
+            case "stats" -> {
+                arguments.removeFirst();
+                if(arguments.isEmpty()) throw new IllegalArgumentException("Missing endpoint");
+                String endpoint = arguments.peekFirst();
+                String json = "{\"string\":\"" + endpoint + "\"}";
+                response = RestClient.sendRequest("logs/endpoint-ussage", HttpMethod.POST, json);
+            }
             case "flush" -> {
                 return RestClient.sendRequest("logs", HttpMethod.DELETE, null);
             }
