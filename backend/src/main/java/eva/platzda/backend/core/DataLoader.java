@@ -1,13 +1,7 @@
 package eva.platzda.backend.core;
 
-import eva.platzda.backend.core.models.OpeningHours;
-import eva.platzda.backend.core.models.Restaurant;
-import eva.platzda.backend.core.models.RestaurantTable;
-import eva.platzda.backend.core.models.Timeslot;
-import eva.platzda.backend.core.repositories.HoursRepository;
-import eva.platzda.backend.core.repositories.RestaurantRepository;
-import eva.platzda.backend.core.repositories.TableRepository;
-import eva.platzda.backend.core.repositories.TimeslotRepository;
+import eva.platzda.backend.core.models.*;
+import eva.platzda.backend.core.repositories.*;
 import eva.platzda.backend.core.services.TimeslotGenerationService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -25,26 +19,29 @@ public class DataLoader implements CommandLineRunner {
     private final HoursRepository hoursRepository;
     private final TimeslotRepository timeslotRepository;
     private final TimeslotGenerationService service;
+    private final UserRepository userRepository;
 
 
     public DataLoader(TableRepository tableRepository,
                       RestaurantRepository restaurantRepository,
                       HoursRepository hoursRepository,
                       TimeslotRepository timeslotRepository,
+                      UserRepository userRepository,
                       TimeslotGenerationService service) {
         this.tableRepository = tableRepository;
         this.restaurantRepository = restaurantRepository;
         this.hoursRepository = hoursRepository;
         this.timeslotRepository = timeslotRepository;
+        this.userRepository = userRepository;
         this.service = service;
     }
 
     @Override
     public void run(String... args) throws Exception{
         if(restaurantRepository.count() == 0) {
-            restaurantRepository.saveAndFlush(new Restaurant("tst1", null, 15));
-            restaurantRepository.saveAndFlush(new Restaurant("tst2", null, 15));
-            restaurantRepository.saveAndFlush(new Restaurant("tst3", null, 15));
+            restaurantRepository.saveAndFlush(new Restaurant("tst1", null, 6));
+            restaurantRepository.saveAndFlush(new Restaurant("tst2", null, 6));
+            restaurantRepository.saveAndFlush(new Restaurant("tst3", null, 6));
 
         }
         if(tableRepository.count() == 0) {
@@ -52,21 +49,21 @@ public class DataLoader implements CommandLineRunner {
             tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(1L),2));
             tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(1L),2));
             tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(1L),4));
-            tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(1L),10));
+            tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(1L),4));
             tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(1L),4));
 
             //tables Restaurant 2
             tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(2L),2));
             tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(2L),2));
             tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(2L),4));
-            tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(2L),10));
+            tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(2L),4));
             tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(2L),4));
 
             //tables Restaurant 3
             tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(3L),2));
             tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(3L),2));
             tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(3L),4));
-            tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(3L),10));
+            tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(3L),4));
             tableRepository.save(new RestaurantTable(restaurantRepository.getReferenceById(3L),4));
         }
         if(hoursRepository.count() == 0) {
@@ -76,12 +73,12 @@ public class DataLoader implements CommandLineRunner {
                 }
             }
         }
-        if(timeslotRepository.count() == 0) {
-            timeslotRepository.save(new Timeslot(tableRepository.getReferenceById(1L), LocalDateTime.of(2025, Month.SEPTEMBER, 10, 10, 0), LocalDateTime.of(2025, Month.SEPTEMBER, 10, 10, 15), null));
-
+        if(userRepository.count() == 0)  {
+            userRepository.save(new User("Oskar", "lele@la.de"));
+            userRepository.save(new User("Alex", "test@test.de"));
+            userRepository.save(new User("Bulian", "test@test.de"));
         }
-        //service.createTimeslots(restaurantRepository.getReferenceById(1L), LocalDate.of(2025, 10, 10));
-        //service.publishTimeslots(LocalDate.of(2025,10,10));
+
         for (int i = 1; i <= 14; i++){
             service.publishTimeslots(LocalDate.now().plusDays(i));
         }

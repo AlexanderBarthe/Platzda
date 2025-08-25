@@ -8,31 +8,31 @@ import java.time.LocalDateTime;
 
 public class ReservationDto {
 
-    private User user;
+    private Long userId;
     private int guests;
     private LocalDateTime start;
     private LocalDateTime end;
 
-    public ReservationDto(User user, int guests, LocalDateTime start, LocalDateTime end){
-        this.user = user;
+    public ReservationDto(Long userId, int guests, LocalDateTime start, LocalDateTime end){
+        this.userId = userId;
         this.guests = guests;
         this.start = start;
         this.end = end;
     }
 
     public static ReservationDto toDto(Reservation reservation) {
-        return new ReservationDto(reservation.getUser(),
+        return new ReservationDto(reservation.getUser().getId(),
                 reservation.getNumberOfGuests(),
                 reservation.getStartTime(),
                 reservation.getEndTime());
     }
 
-    public User getUser() {
-        return user;
+    public Long getUser() {
+        return userId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUser(Long userId) {
+        this.userId = userId;
     }
 
     public int getGuests() {

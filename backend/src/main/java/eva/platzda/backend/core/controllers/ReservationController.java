@@ -16,6 +16,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/reservation")
@@ -59,7 +61,30 @@ public class ReservationController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate day) {
 
         List<Reservation> reservation = reservationService.findReservationsForRestaurant(restaurantService.findById(restaurantId), day);
-        List<ReservationDto> result = reservation.stream().map(ReservationDto::toDto).toList();
+
+        Map<Long, List<Reservation>> groupedByUser = reservation.stream()
+                .collect(Collectors.groupingBy(res -> res.getUser().getId()));
+
+        List<ReservationDto> result = groupedByUser.entrySet().stream()
+                .map(entry -> {
+                    Long userId = entry.getKey();
+                    List<Reservation> userReservations = entry.getValue();
+
+                    int totalGuests = userReservations.stream()
+                            .mapToInt(Reservation::getNumberOfGuests)
+                            .sum();
+                    Reservation first = userReservations.get(0);
+
+                    return new ReservationDto(
+                            userId,
+                            totalGuests,
+                            first.getStartTime(),
+                            first.getEndTime()
+                    );
+                })
+                .toList();
+
+        //List<ReservationDto> result = reservation.stream().map(ReservationDto::toDto).toList();
         return ResponseEntity.ok(result);
     }
 

@@ -2,6 +2,7 @@ package eva.platzda.backend.core.services;
 
 import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.repositories.RestaurantRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public class RestaurantService {
      * @return Restaurant entity or null if not found
      */
     public Restaurant findById(Long id) {
-        return restaurantRepository.findById(id).orElse(null);
+        return restaurantRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
     }
 
 

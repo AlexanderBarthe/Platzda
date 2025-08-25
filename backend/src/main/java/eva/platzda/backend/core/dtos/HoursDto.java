@@ -24,11 +24,11 @@ public class HoursDto {
     public static HoursDto fromObject(OpeningHours hours) {
         if(hours == null) return null;
 
-        Long restaurantId = (hours.getRestaurant() == null) ? null : hours.getRestaurant().getId();
+        //Long restaurantId = (hours.getRestaurant() == null) ? null : hours.getRestaurant().getId();
 
         return new HoursDto(
                 hours.getId(),
-                restaurantId,
+                (hours.getRestaurant() != null ? hours.getRestaurant().getId() : null),
                 hours.getWeekday(),
                 hours.getOpeningTime(),
                 hours.getClosingTime()

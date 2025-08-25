@@ -41,7 +41,7 @@ public class ResvCreateCommand implements ConsoleCommand {
         try {
             guests = Integer.parseInt(args[3]);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid user id");
+            throw new IllegalArgumentException("Invalid amount of guests");
         }
 
         String json = "{}";
