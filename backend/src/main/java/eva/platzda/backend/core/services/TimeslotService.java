@@ -25,7 +25,7 @@ public class TimeslotService {
     */
     public List<Timeslot> findAllTimeslots(){return timeslotRepository.findAll();}
 
-    public List<Timeslot> finAllFreeTimeslots() {return timeslotRepository.findFreeTimeslots();}
+    public List<Timeslot> findAllFreeTimeslots() {return timeslotRepository.findFreeTimeslots();}
 
     public Timeslot findById(Long id) {return timeslotRepository.findById(id).orElse(null);}
 

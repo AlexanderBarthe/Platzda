@@ -14,7 +14,7 @@ public interface HoursRepository extends JpaRepository<OpeningHours, Long> {
     List<OpeningHours> findByRestaurantId(@Param("restaurantId") Long restaurantId);
 
 
-    @Query("SELECT b FROm OpeningHours b WHERE b.restaurant.id = :restaurantId AND b.weekday = :weekday")
+    @Query("SELECT b FROm OpeningHours b WHERE b.restaurant.id = :restaurantId AND b.weekday = :weekday ORDER BY b.openingTime")
     List<OpeningHours> findByWeekday(@Param("weekday") int weekday, @Param("restaurantId") Long restaurantId);
 
     @Modifying
