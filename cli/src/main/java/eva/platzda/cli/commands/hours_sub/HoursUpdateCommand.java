@@ -48,10 +48,10 @@ public class HoursUpdateCommand implements ConsoleCommand {
             throw new IllegalArgumentException("Invalid closing Time.");
         }
 
-        String json = "{\"id\":, " + id +
-                "\"restaurantId\":" + restaurantId +
-                "\"weekday\":" + weekday +
-                "\"openingTime\"" + openingTime +
+        String json = "{\"id\":" + id + ","+
+                "\"restaurantId\":" + restaurantId + ","+
+                "\"weekday\":" + weekday + ","+
+                "\"openingTime\"" + openingTime + ","+
                 "\"closingTime\":" + closingTime +
                 "}";
         return RestClient.sendRequest("hours/"+restaurantId, HttpMethod.PUT, json);
