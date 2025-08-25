@@ -157,6 +157,12 @@ public class ReservationService {
         return reservationRepository.findReservationForUser(user);
     }
 
+    public boolean checkSingleReservationDay(Long userId, LocalDate day) {
+        LocalDateTime dayStart = day.atStartOfDay();
+        LocalDateTime dayEnd = day.atTime(23,59,59);
+        return reservationRepository.existsReservationForUserOnDay(userId, dayStart, dayEnd);
+    }
+
     public List<Reservation> findReservationsForRestaurant(Restaurant restaurant, LocalDate date) {
         LocalDateTime dayStart = date.atTime(
                 hoursRepository.findByWeekday(date.getDayOfWeek().getValue(), restaurant.getId()).getFirst().getOpeningTime());
@@ -173,6 +179,15 @@ public class ReservationService {
             t.setUser(null);
         }
         reservationRepository.delete(reservation);
+    }
+
+    public void deleteReservationUserDay(Long userId, LocalDate date) {
+        List<Reservation> reservationsUser = reservationRepository.findReservationForUser(userRepository.getReferenceById(userId));
+        for(Reservation r: reservationsUser) {
+            if(r.getStartTime().toLocalDate().equals(date)) {
+                deleteReservation(r);
+            }
+        }
     }
 
     public Reservation findById(Long reservationId) {

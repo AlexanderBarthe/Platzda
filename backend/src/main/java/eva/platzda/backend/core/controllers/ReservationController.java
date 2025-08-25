@@ -6,8 +6,8 @@ import eva.platzda.backend.core.models.Reservation;
 import eva.platzda.backend.core.services.HoursService;
 import eva.platzda.backend.core.services.ReservationService;
 import eva.platzda.backend.core.services.RestaurantService;
+import eva.platzda.backend.core.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,22 +25,32 @@ public class ReservationController {
     private ReservationService reservationService;
     private RestaurantService restaurantService;
     private HoursService hoursService;
+    private UserService userService;
 
     @Autowired
     public ReservationController(ReservationService reservationService,
                                  RestaurantService restaurantService,
-                                 HoursService hoursService) {
+                                 HoursService hoursService,
+                                 UserService userService) {
         this.reservationService = reservationService;
         this.restaurantService = restaurantService;
         this.hoursService = hoursService;
+        this.userService = userService;
     }
 
     @PostMapping
-    public ResponseEntity<List<Reservation>> createReservation(@RequestParam Long restaurantId,
+    public ResponseEntity<List<ReservationDto>> createReservation(@RequestParam Long restaurantId,
                                                @RequestParam Long userId,
                                                @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
                                                @RequestParam int guests) {
-        return ResponseEntity.ok(reservationService.bookSlot(restaurantId, userId, start, guests));
+
+        if(reservationService.checkSingleReservationDay(userId, start.toLocalDate())) {
+            throw new IllegalStateException("User already has a reservation on this day");
+        }
+
+        List<ReservationDto> reservationDtos = reservationService.bookSlot(restaurantId, userId, start, guests).stream().map(ReservationDto::toDto).toList();
+
+        return ResponseEntity.ok(reservationDtos);
     }
 
     @GetMapping("/restaurant/{restaurantId}")
@@ -63,8 +73,14 @@ public class ReservationController {
     }
 
     @DeleteMapping("/{reservationId}")
-    public ResponseEntity<String> deleteReservation(@PathVariable Long reservationId) {
+    public ResponseEntity<String> deleteReservationId(@PathVariable Long reservationId) {
         reservationService.deleteReservation(reservationService.findById(reservationId));
+        return ResponseEntity.ok("Reservation deleted succesfully");
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<String> deleteReservationUser(@PathVariable Long userId, @RequestParam LocalDate date){
+        reservationService.deleteReservationUserDay(userId, date);
         return ResponseEntity.ok("Reservation deleted succesfully");
     }
 

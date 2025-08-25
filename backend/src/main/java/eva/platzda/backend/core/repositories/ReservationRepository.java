@@ -24,6 +24,17 @@ AND r.endTime > :dayStart
                                             @Param("dayStart")LocalDateTime dayStart,
                                             @Param("dayEnd") LocalDateTime dayEnd);
 
+    @Query("""
+SELECT COUNT(r) > 0 
+FROM Reservation r 
+WHERE r.user.id = :userId
+AND r.startTime >= :dayStart
+AND r.endTime <= :dayEnd    
+""")
+    boolean existsReservationForUserOnDay(@Param("userId") Long userId,
+                                          @Param("dayStart") LocalDateTime dayStart,
+                                          @Param("dayEnd") LocalDateTime dayEnd);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
 SELECT r FROM Reservation r 
