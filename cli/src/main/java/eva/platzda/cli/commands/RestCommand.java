@@ -19,7 +19,8 @@ public class RestCommand extends CommandExecutor implements ConsoleCommand {
                 new RestUntagCommand(),
                 new RestSubscribeCommand(subscriptionService),
                 new RestUnsubscribeCommand(subscriptionService),
-                new RestGetSubsCommand(subscriptionService)
+                new RestGetSubsCommand(subscriptionService),
+                new RestSearchCommand()
         );
     }
 

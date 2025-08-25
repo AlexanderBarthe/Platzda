@@ -62,6 +62,22 @@ public class RestaurantController {
 
     /**
      *
+     * Returns restaurant with all searched tags
+     *
+     */
+    @PostMapping("/search")
+    public ResponseEntity<List<RestaurantDto>> getRestaurantsByTags(@RequestBody TagRequest tagRequest) {
+        return ResponseEntity.ok(
+                restaurantService
+                        .findByTags(tagRequest.getTag())
+                        .stream()
+                        .map(RestaurantDto::fromObject)
+                        .collect(Collectors.toList()));
+    }
+
+
+    /**
+     *
      * Creates a new Restaurant for the given owner.
      *
      * @param ownerId Id of the User who will own the restaurant

@@ -40,6 +40,16 @@ public class RestaurantService {
         return restaurantRepository.findById(id).orElse(null);
     }
 
+
+    public List<Restaurant> findByTags(String taglist) {
+
+        List<String> tags = List.of(taglist.split(","));
+        return findAllRestaurants()
+                .stream()
+                .filter(restaurant -> restaurant.getTags().containsAll(tags))
+                .toList();
+    }
+
     /**
      *
      * Creates a new restaurant.

@@ -43,18 +43,13 @@ public abstract class RestClient {
 
 
         if (response.statusCode() >= 200 && response.statusCode() < 300) {
-            String returnHeader = switch (method) {
-                case PUT -> "Successfully updated:\n";
-                case POST -> "Successfully created:\n";
-                default -> "";
-            };
             try {
                 ObjectMapper mapper = new ObjectMapper();
                 Object json = mapper.readValue(response.body(), Object.class);
                 ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
-                return returnHeader + writer.writeValueAsString(json);
+                return writer.writeValueAsString(json);
             } catch (Exception e) {
-                return returnHeader + response.body();
+                return response.body();
             }
         } else {
             return "Error " + response.statusCode() + ": " + response.body();
