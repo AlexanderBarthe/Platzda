@@ -124,13 +124,52 @@ public class ReservationService {
         User user = userRepository.getReferenceById(userId);
         List<RestaurantTable> tables = tableRepository.findByRestaurantId(restaurantId);
 
-        tables.sort(Comparator.comparing(RestaurantTable::getSize).reversed());
+        tables.sort(Comparator.comparing(RestaurantTable::getSize)); //.reversed()
 
         int res_slots = restaurantRepository.getReferenceById(restaurantId).getTimeSlotDuration();
 
         int assigned = 0;
         List<Reservation> reservations = new ArrayList<>();
 
+        List<RestaurantTable> availableTables = new ArrayList<>(tables);
+
+        while ((assigned < guests) && (!availableTables.isEmpty())) {
+
+            int missingSpace = guests - assigned;
+
+            RestaurantTable selectedTable = availableTables.stream()
+                    .filter(t -> t.getSize() >= (missingSpace))
+                    .findFirst()
+                    .orElse(null);
+
+            if (selectedTable == null) {
+                selectedTable = availableTables.getLast();
+            }
+            List<Timeslot> slots = timeslotRepository.findSlotsForUpdate(selectedTable, start, end);
+            if (slots.size() < res_slots) {
+                availableTables.remove(selectedTable);
+                continue;
+            }
+
+            boolean allFree = slots.stream().allMatch(s -> s.getUser() == null);
+            if (!allFree) {
+                availableTables.remove(selectedTable);
+                continue;
+            }
+
+            int take = Math.min(selectedTable.getSize(), guests-assigned);
+            if (take > 0) {
+                slots.forEach(s -> s.setUser(user));
+                timeslotRepository.saveAll(slots);
+
+                Reservation reservation = new Reservation(selectedTable, user, start, end, take);
+                reservations.add(reservation);
+                assigned += take;
+            }
+            availableTables.remove(selectedTable);
+        }
+
+        /*
         for (RestaurantTable table: tables) {
             if (assigned >= guests) break;
 
@@ -149,7 +188,7 @@ public class ReservationService {
                reservations.add(reservation);
                 assigned += take;
             }
-        }
+        }*/
 
         if (assigned < guests) {
             throw new NotEnoughCapacityException();
