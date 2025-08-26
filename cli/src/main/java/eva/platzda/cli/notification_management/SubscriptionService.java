@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-public class SubscriptionService {
+public class SubscriptionService implements SocketNotificationReceiver {
     
     private final Set<NotificationReceiver> notificationReceivers = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
@@ -115,7 +115,8 @@ public class SubscriptionService {
 
     }
 
-    public void notifyNotificationRecievers(String msg) {
+    @Override
+    public void sendNotification(String msg) {
         //Type, id, msg
         String[] args = msg.split(";");
         if(args.length < 2) throw new IllegalArgumentException("Not enough arguments in message");

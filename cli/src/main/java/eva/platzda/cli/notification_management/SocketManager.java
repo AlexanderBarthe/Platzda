@@ -1,5 +1,6 @@
 package eva.platzda.cli.notification_management;
 
+import eva.platzda.cli.notification_management.receivers.NotificationReceiver;
 import io.github.cdimascio.dotenv.Dotenv;
 
 import java.io.*;
@@ -8,10 +9,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SocketManager {
@@ -23,8 +24,10 @@ public class SocketManager {
     private PrintWriter writer;
     private BufferedReader reader;
     private Thread readerThread;
-    
+
     private final SubscriptionService subscriptionService;
+
+    private final Set<SocketNotificationReceiver> notificationHooks = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     //Reconnect/Scheduler
     private final ScheduledExecutorService reconnectExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -46,9 +49,11 @@ public class SocketManager {
     private final AtomicBoolean stopReconnect = new AtomicBoolean(false);
 
     public SocketManager(SubscriptionService subscriptionService) {
-        
+
         this.subscriptionService = subscriptionService;
-        
+
+        addNotificationHook(subscriptionService);
+
         try {
             connect();
         } catch (Exception e) {
@@ -129,7 +134,11 @@ public class SocketManager {
                 String line;
                 while (socket != null && !socket.isClosed() && (line = reader.readLine()) != null) {
                     if (line.startsWith("Error:")) throw new Exception(line);
-                    subscriptionService.notifyNotificationRecievers(line);
+
+                    for(SocketNotificationReceiver notificationHook : notificationHooks) {
+                        notificationHook.sendNotification(line);
+                    }
+
                 }
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
@@ -243,5 +252,13 @@ public class SocketManager {
         cancelScheduledReconnect();
         try { reconnectExecutor.shutdownNow(); } catch (Exception ignored) {}
         disconnect();
+    }
+
+    public void addNotificationHook(SocketNotificationReceiver notificationHook) {
+        notificationHooks.add(notificationHook);
+    }
+
+    public void removeNotificationHook(SocketNotificationReceiver notificationHook) {
+        notificationHooks.remove(notificationHook);
     }
 }

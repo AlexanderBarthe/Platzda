@@ -2,6 +2,7 @@ package eva.platzda.cli.commands.scripts;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.commands.execution.ConsoleManager;
+import eva.platzda.cli.notification_management.SocketNotificationReceiver;
 import eva.platzda.cli.notification_management.receivers.NotificationReceiver;
 import eva.platzda.cli.notification_management.SubscriptionService;
 import eva.platzda.cli.notification_management.receivers.SocketNotificationType;
@@ -55,9 +56,7 @@ public class ScriptCommand implements ConsoleCommand {
         ConsoleManager consoleManager = new ConsoleManager(subscriptionService, scriptLoader);
         List<String> commands = scriptLoader.getScript(args[0]);
 
-        ConcurrentHashMap<Long, CompletableFuture<String>> futures = new ConcurrentHashMap<>();
-
-        System.out.println("Starting script execution...");
+        Set<CompletableFuture<String>> futures = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
         for(String command : commands){
             if(command.startsWith("await")) {
@@ -75,35 +74,63 @@ public class ScriptCommand implements ConsoleCommand {
                     continue;
                 }
 
-                List<Long> awaitedIds = resolveAwaitedIds(awaitArgs[2]);
-
-                for(long awaitedId : awaitedIds){
-
+                if(awaitArgs[2].equals("any")) {
                     CompletableFuture<String> future = new CompletableFuture<>();
 
                     //schedule a timeout that completes the future exceptionally after TIMEOUT_SECONDS
                     ScheduledFuture<?> timeoutTask = TIMEOUT_SCHEDULER.schedule(
                             () -> future.completeExceptionally(new TimeoutException(
-                                    "Await timed out after " + timeoutSeconds + " seconds for id " + awaitedId)),
+                                    "Await timed out after " + timeoutSeconds + " seconds.")),
                             timeoutSeconds, TimeUnit.SECONDS);
-
-                    //cancel the scheduled timeout if the future completes before timeout
                     future.whenComplete((res, ex) -> timeoutTask.cancel(false));
+                    SocketNotificationReceiver hook = new SocketNotificationReceiver() {
+                        @Override
+                        public void sendNotification(String message) {
+                            if (message == null) return;
 
-                    NotificationReceiver receiver = new NotificationReceiver(awaitedId, awaitedType, line -> {
-                        if (line == null) return;
+                            if ("__CONNECTION_CLOSED__".equals(message)) {
+                                future.completeExceptionally(new IllegalStateException("Connection closed"));
+                                return;
+                            }
 
-                        if ("__CONNECTION_CLOSED__".equals(line)) {
-                            future.completeExceptionally(new IllegalStateException("Connection closed"));
-                            return;
+                            future.complete(message);
                         }
+                    };
+                    subscriptionService.getSocketManager().addNotificationHook(hook);
+                    futures.add(future);
+                }
+                else {
 
-                        future.complete(line);
-                    });
-                    subscriptionService.subscribeToObject(receiver);
+                    List<Long> awaitedIds = resolveAwaitedIds(awaitArgs[2]);
 
-                    futures.put(awaitedId, future);
+                    for (long awaitedId : awaitedIds) {
 
+                        CompletableFuture<String> future = new CompletableFuture<>();
+
+                        //schedule a timeout that completes the future exceptionally after TIMEOUT_SECONDS
+                        ScheduledFuture<?> timeoutTask = TIMEOUT_SCHEDULER.schedule(
+                                () -> future.completeExceptionally(new TimeoutException(
+                                        "Await timed out after " + timeoutSeconds + " seconds for id " + awaitedId)),
+                                timeoutSeconds, TimeUnit.SECONDS);
+
+                        //cancel the scheduled timeout if the future completes before timeout
+                        future.whenComplete((res, ex) -> timeoutTask.cancel(false));
+
+                        NotificationReceiver receiver = new NotificationReceiver(awaitedId, awaitedType, line -> {
+                            if (line == null) return;
+
+                            if ("__CONNECTION_CLOSED__".equals(line)) {
+                                future.completeExceptionally(new IllegalStateException("Connection closed"));
+                                return;
+                            }
+
+                            future.complete(line);
+                        });
+                        subscriptionService.subscribeToObject(receiver);
+
+                        futures.add(future);
+
+                    }
                 }
 
             }
@@ -112,7 +139,7 @@ public class ScriptCommand implements ConsoleCommand {
             }
         }
 
-        for(CompletableFuture<String> future : futures.values()){
+        for(CompletableFuture<String> future : futures){
             try {
                 future.get();
             } catch (InterruptedException | ExecutionException e) {

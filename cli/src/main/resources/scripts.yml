@@ -2,7 +2,7 @@ scripts:
   hello:
     - await notification_restaurant 2
     - help
-  rate50:
+  rate50-test:
     - user --silent create A
     - log --silent flush
     - time --silent --flush
@@ -14,5 +14,17 @@ scripts:
     - time --max
     - log max-time
     - time --silent --flush
-  correctness:
+  correctness-test:
+    - user drop
+    - rest drop
+    - table drop
+    - resv drop
+    - hours drop
     - log flush
+  notification-test:
+    - time script --silent notification-test-helper
+  notification-test-helper:
+      - resv --silent drop
+      - resv --silent create 1 1 2025-10-01T14:00:00 1
+      - await notification_reservation any
+      - resv --silent delete-id 1

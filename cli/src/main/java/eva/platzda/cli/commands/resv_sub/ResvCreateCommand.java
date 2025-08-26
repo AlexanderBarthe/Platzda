@@ -10,6 +10,7 @@ import eva.platzda.cli.rest_api.RestClient;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,6 +30,13 @@ public class ResvCreateCommand implements ConsoleCommand {
         if(args.length == 0) {
             return "Not enough arguments provided. See 'help resv' for more information.";
         }
+
+        boolean noNotification = false;
+        if(args[0].equals("--no-notification")) {
+            noNotification = true;
+            args = Arrays.copyOfRange(args, 1, args.length);
+        }
+
         Long restaurantId;
         Long userId;
         LocalDateTime start;
@@ -65,24 +73,27 @@ public class ResvCreateCommand implements ConsoleCommand {
         String response = RestClient.sendRequest(url, HttpMethod.POST, json);
 
         //Subscribe to created reservations if successful
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            JsonNode root = mapper.readTree(response);
-            if (!root.isArray()) throw new Exception();
+        if(!noNotification) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                JsonNode root = mapper.readTree(response);
+                if (!root.isArray()) throw new Exception();
 
-            List<String> ids = new ArrayList<>();
-            for (JsonNode item : root) {
-                JsonNode idNode = item.get("id");
-                if (idNode != null && !idNode.isNull()) {
-                    ids.add(idNode.asText());
+                List<String> ids = new ArrayList<>();
+                for (JsonNode item : root) {
+                    JsonNode idNode = item.get("id");
+                    if (idNode != null && !idNode.isNull()) {
+                        ids.add(idNode.asText());
+                    }
                 }
-            }
 
-            for (String id : ids) {
-                Long idLong = Long.parseLong(id);
-                subscriptionService.subscribeToObject(new ReservationSubscriber(idLong, System.out::println));
+                for (String id : ids) {
+                    Long idLong = Long.parseLong(id);
+                    subscriptionService.subscribeToObject(new ReservationSubscriber(idLong, System.out::println));
+                }
+            } catch (Exception ignored) {
             }
-        } catch (Exception ignored) {}
+        }
 
         return response;
 
