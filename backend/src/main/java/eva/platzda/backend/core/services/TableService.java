@@ -5,6 +5,7 @@ import eva.platzda.backend.core.repositories.TableRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -17,12 +18,17 @@ import java.util.List;
 public class TableService {
 
     private final TableRepository tableRepository;
+    private final TimeslotGenerationService timeslotGenerationService;
 
     /**
      * All Args Constructor
      * @param tableRepository
      */
-    public TableService(TableRepository tableRepository) {this.tableRepository = tableRepository;}
+    public TableService(TableRepository tableRepository,
+                        TimeslotGenerationService timeslotGenerationService) {
+        this.tableRepository = tableRepository;
+        this.timeslotGenerationService = timeslotGenerationService;
+    }
 
     /**
      * Returns all tables across all restaurants.
@@ -58,6 +64,9 @@ public class TableService {
     @Transactional
     public RestaurantTable createTable(RestaurantTable table) {
         table.setId(null);
+        for (int i = 0; i <= 14; i++){
+            timeslotGenerationService.connectTimeslotsTable(LocalDate.now().plusDays(i), table);
+        }
         return tableRepository.save(table);
     }
 

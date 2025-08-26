@@ -82,7 +82,14 @@ public class TimeslotGenerationService {
         }
 
         timeslotService.deleteTimeslotsBeforeDate(LocalDate.now().minusDays(1));
+    }
 
+    public void connectTimeslotsTable(LocalDate targetDate, RestaurantTable table){
+        List<Timeslot> slots = createTimeslots(table.getRestaurant(), targetDate);
+        for(Timeslot s: slots) {
+            Timeslot saved = new Timeslot(table, s.getStartTime(), s.getEndTime(), null );
+            timeslotRepository.save(saved);
+        }
     }
 
     /**
