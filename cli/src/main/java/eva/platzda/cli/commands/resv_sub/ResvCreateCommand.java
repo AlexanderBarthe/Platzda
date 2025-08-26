@@ -9,6 +9,9 @@ import eva.platzda.cli.rest_api.HttpMethod;
 import eva.platzda.cli.rest_api.RestClient;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class ResvCreateCommand implements ConsoleCommand {
 
@@ -61,13 +64,23 @@ public class ResvCreateCommand implements ConsoleCommand {
                 + "&guests=" + guests;
         String response = RestClient.sendRequest(url, HttpMethod.POST, json);
 
-        //Subscribe to created reservation if successful
+        //Subscribe to created reservations if successful
         ObjectMapper mapper = new ObjectMapper();
         try {
             JsonNode root = mapper.readTree(response);
-            if (root.has("id")) {
-                Long id = Long.parseLong(root.get("id").asText());
-                subscriptionService.subscribeToObject(new ReservationSubscriber(id, System.out::println));
+            if (!root.isArray()) throw new Exception();
+
+            List<String> ids = new ArrayList<>();
+            for (JsonNode item : root) {
+                JsonNode idNode = item.get("id");
+                if (idNode != null && !idNode.isNull()) {
+                    ids.add(idNode.asText());
+                }
+            }
+
+            for (String id : ids) {
+                Long idLong = Long.parseLong(id);
+                subscriptionService.subscribeToObject(new ReservationSubscriber(idLong, System.out::println));
             }
         } catch (Exception ignored) {}
 

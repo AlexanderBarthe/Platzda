@@ -1,5 +1,7 @@
 package eva.platzda.backend.core.notifications;
 
+import eva.platzda.backend.core.models.Reservation;
+import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.services.ReservationService;
 import eva.platzda.backend.core.services.RestaurantService;
 import eva.platzda.backend.logging.LogService;
@@ -30,7 +32,6 @@ public class NotificationSocket implements InitializingBean, DisposableBean {
     private static final Logger logger = LoggerFactory.getLogger(NotificationSocket.class);
 
     private final RestaurantService restaurantService;
-    private final ReservationService reservationService;
 
     private final LogService logService;
 
@@ -43,9 +44,8 @@ public class NotificationSocket implements InitializingBean, DisposableBean {
     Set<NotificationEntry> notificationListeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     @Autowired
-    public NotificationSocket(RestaurantService restaurantService, ReservationService reservationService, LogService logService) {
+    public NotificationSocket(RestaurantService restaurantService, LogService logService) {
         this.restaurantService = restaurantService;
-        this.reservationService = reservationService;
         this.logService = logService;
     }
 
@@ -191,12 +191,6 @@ public class NotificationSocket implements InitializingBean, DisposableBean {
             }
             case "subscribe": {
                 if(notificationType == NotificationType.NOTIFICATION_RESERVATION) {
-                    if (reservationService.findById(notificationId) == null) {
-                        replyError(answerId, conn, "No reservation with id " + notificationId + " found.");
-                        String msg = "Invalid message from " + conn.getRemoteAddress() + ": No reservation with id " + notificationId + " found.";
-                        logClientRequest(start, msg, false);
-                        return;
-                    }
                     NotificationEntry notif = new NotificationEntry(NotificationType.NOTIFICATION_RESERVATION, notificationId, conn);
                     notificationListeners.add(notif);
 
@@ -235,12 +229,6 @@ public class NotificationSocket implements InitializingBean, DisposableBean {
                 }
 
                 if(notificationType == NotificationType.NOTIFICATION_RESERVATION) {
-                    if (reservationService.findById(notificationId) == null) {
-                        replyError(answerId, conn, "No reservation with id " + notificationId + " found.");
-                        String msg = "Invalid message from " + conn.getRemoteAddress() + ": No reservation with id " + notificationId + " found.";
-                        logClientRequest(start, msg, false);
-                        return;
-                    }
                     Long finalNotificationId = notificationId;
                     List<NotificationEntry> toUnsub = notificationListeners.stream()
                             .filter(nl -> nl.getConnection().equals(conn)
@@ -313,22 +301,33 @@ public class NotificationSocket implements InitializingBean, DisposableBean {
         toRemove.forEach(notificationListeners::remove);
     }
 
-    public void broadcastChange(NotificationType notificationType, Long changedId, String updateMessage) {
+    public void notifyChange(Reservation reservation, String updateMessage) {
 
-        notificationListeners.stream()
-                .filter(nl -> nl.getType() == notificationType)
-                .filter(nl -> nl.getAwaitedId() == changedId)
-                .forEach(nl -> {
-                    ClientConnection session = nl.getConnection();
-                    if(session.isOpen()) {
-                        try {
-                            String notifTypeString = notificationType.getTranslation();
-                            session.send(notifTypeString + ";" + changedId + ";" + updateMessage);
-                        } catch (IOException e) {
-                            logger.warn("Failed to send message to {}: {}", session.getRemoteAddress(), e.getMessage());
-                        }
+        if(reservation == null) return;
+
+        Long changedReservationId = reservation.getId();
+        Long restaurantId = reservation.getRestaurantTable().getRestaurant().getId();
+
+
+        notificationListeners.forEach(ne -> {
+
+            NotificationType listenerNotificationType = ne.getType();
+            String notifTypeString = listenerNotificationType.getTranslation();
+
+            Long properIdToSend = ne.getType() == NotificationType.NOTIFICATION_RESTAURANT ? restaurantId : changedReservationId;
+
+            if(ne.getAwaitedId() == properIdToSend) {
+                ClientConnection session = ne.getConnection();
+                if(session.isOpen()) {
+                    try {
+                        session.send(notifTypeString + ";" + properIdToSend + ";" + updateMessage);
+                    } catch (IOException e) {
+                        logger.warn("Failed to send message to {}: {}", session.getRemoteAddress(), e.getMessage());
                     }
-                });
+                }
+            }
+
+        });
 
     }
 

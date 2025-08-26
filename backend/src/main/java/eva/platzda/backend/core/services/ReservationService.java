@@ -3,9 +3,11 @@ package eva.platzda.backend.core.services;
 
 import eva.platzda.backend.core.dtos.TimeWindow;
 import eva.platzda.backend.core.models.*;
+import eva.platzda.backend.core.notifications.NotificationSocket;
 import eva.platzda.backend.core.repositories.*;
 import eva.platzda.backend.error_handling.NotEnoughCapacityException;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -25,18 +27,23 @@ public class ReservationService {
     private final HoursRepository hoursRepository;
     private final RestaurantRepository restaurantRepository;
 
+    private final NotificationSocket notificationSocket;
+
+    @Autowired
     public ReservationService(TimeslotRepository timeslotRepository,
                               TableRepository tableRepository,
                               UserRepository userRepository,
                               ReservationRepository reservationRepository,
                               HoursRepository hoursRepository,
-                              RestaurantRepository restaurantRepository) {
+                              RestaurantRepository restaurantRepository,
+                              NotificationSocket notificationSocket) {
         this.timeslotRepository = timeslotRepository;
         this.tableRepository = tableRepository;
         this.userRepository = userRepository;
         this.reservationRepository = reservationRepository;
         this.hoursRepository = hoursRepository;
         this.restaurantRepository = restaurantRepository;
+        this.notificationSocket = notificationSocket;
     }
 
     private boolean isContinuous(List<Timeslot> window) {
@@ -186,12 +193,17 @@ public class ReservationService {
 
                Reservation reservation = new Reservation(table, user, start, end, take);
                reservations.add(reservation);
-                assigned += take;
+               assigned += take;
             }
         }*/
 
         if (assigned < guests) {
             throw new NotEnoughCapacityException();
+        }
+
+        for (Reservation r: reservations) {
+            String msg = "Reservation for table " + r.getRestaurantTable().getId() + " has been booked from " + r.getStartTime() + " to " + r.getEndTime();
+            notificationSocket.notifyChange(r, msg);
         }
 
         return reservationRepository.saveAll(reservations);
@@ -222,6 +234,10 @@ public class ReservationService {
         for (Timeslot t: timeslots) {
             t.setUser(null);
         }
+
+        String msg = "Reservation for table " + reservation.getRestaurantTable().getId() + " from " + reservation.getStartTime() + " to " + reservation.getEndTime() + " has been canceled.";
+        notificationSocket.notifyChange(reservation, msg);
+
         reservationRepository.delete(reservation);
     }
 
