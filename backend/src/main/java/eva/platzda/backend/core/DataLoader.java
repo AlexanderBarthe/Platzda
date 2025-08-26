@@ -74,7 +74,7 @@ public class DataLoader implements CommandLineRunner {
             userRepository.save(new User("Bulian", "test@test.de"));
         }
 
-        for (int i = 0; i <= 14; i++){
+        for (int i = 0; i <= service.getPregenerated_days(); i++){
             service.publishTimeslots(LocalDate.now().plusDays(i));
         }
     }

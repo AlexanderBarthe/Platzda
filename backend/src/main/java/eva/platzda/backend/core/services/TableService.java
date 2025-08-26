@@ -64,7 +64,7 @@ public class TableService {
     @Transactional
     public RestaurantTable createTable(RestaurantTable table) {
         table.setId(null);
-        for (int i = 0; i <= 14; i++){
+        for (int i = 0; i <= timeslotGenerationService.getPregenerated_days(); i++){
             timeslotGenerationService.connectTimeslotsTable(LocalDate.now().plusDays(i), table);
         }
         return tableRepository.save(table);

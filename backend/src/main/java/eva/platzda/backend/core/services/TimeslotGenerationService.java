@@ -31,6 +31,7 @@ public class TimeslotGenerationService {
     private final RestaurantService restaurantService;
     private final HoursService hoursService;
     private final TimeslotRepository timeslotRepository;
+    private final int pregenerated_days; // legt fest, für wie viele Tage im vorraus man buchen kann
 
     /**
      * All Args Constructor
@@ -47,6 +48,11 @@ public class TimeslotGenerationService {
         this.restaurantService = restaurantService;
         this.hoursService = hoursService;
         this.timeslotRepository = timeslotRepository;
+        this.pregenerated_days = 14;
+    }
+
+    public int getPregenerated_days() {
+        return pregenerated_days;
     }
 
     /**
