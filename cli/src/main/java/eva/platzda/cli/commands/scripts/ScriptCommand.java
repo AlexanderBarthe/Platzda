@@ -2,8 +2,9 @@ package eva.platzda.cli.commands.scripts;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.commands.execution.ConsoleManager;
-import eva.platzda.cli.notification_management.NotificationReceiver;
+import eva.platzda.cli.notification_management.receivers.NotificationReceiver;
 import eva.platzda.cli.notification_management.SubscriptionService;
+import eva.platzda.cli.notification_management.receivers.SocketNotificationType;
 import io.github.cdimascio.dotenv.Dotenv;
 
 import java.util.*;
@@ -58,11 +59,21 @@ public class ScriptCommand implements ConsoleCommand {
 
         for(String command : commands){
             if(command.startsWith("await")) {
-                if(command.split(" ").length < 2){
+
+                String[] awaitArgs = command.split(" ");
+
+                if(awaitArgs.length < 3){
+                    System.out.println("Not enough arguments in command: " + command);
                     continue;
                 }
 
-                List<Long> awaitedIds = resolveAwaitedIds(command.split(" ")[1]);
+                SocketNotificationType awaitedType = SocketNotificationType.fromString(awaitArgs[1]);
+                if(awaitedType == null){
+                    System.out.println("Invalid socket notification type: " + awaitArgs[1] + "in command: " + command);
+                    continue;
+                }
+
+                List<Long> awaitedIds = resolveAwaitedIds(awaitArgs[2]);
 
                 for(long awaitedId : awaitedIds){
 
@@ -77,7 +88,7 @@ public class ScriptCommand implements ConsoleCommand {
                     //cancel the scheduled timeout if the future completes before timeout
                     future.whenComplete((res, ex) -> timeoutTask.cancel(false));
 
-                    NotificationReceiver receiver = new NotificationReceiver(awaitedId, "notification", line -> {
+                    NotificationReceiver receiver = new NotificationReceiver(awaitedId, awaitedType, line -> {
                         if (line == null) return;
 
                         if ("__CONNECTION_CLOSED__".equals(line)) {
@@ -87,7 +98,7 @@ public class ScriptCommand implements ConsoleCommand {
 
                         future.complete(line);
                     });
-                    subscriptionService.addNotificationReciever(receiver);
+                    subscriptionService.subscribeToObject(receiver);
 
                     futures.put(awaitedId, future);
 

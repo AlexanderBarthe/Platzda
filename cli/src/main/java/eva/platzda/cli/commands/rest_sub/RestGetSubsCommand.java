@@ -2,6 +2,7 @@ package eva.platzda.cli.commands.rest_sub;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.notification_management.SubscriptionService;
+import eva.platzda.cli.notification_management.receivers.SocketNotificationType;
 
 public class RestGetSubsCommand implements ConsoleCommand {
 
@@ -18,6 +19,6 @@ public class RestGetSubsCommand implements ConsoleCommand {
 
     @Override
     public String executeCommand(String[] args) {
-        return subscriptionService.getAllTableSubscriptions();
+        return subscriptionService.getSubscriptionsOfType(SocketNotificationType.NOTIFICATION_RESTAURANT);
     }
 }

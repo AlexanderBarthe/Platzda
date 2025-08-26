@@ -128,19 +128,10 @@ public class SocketManager {
             try {
                 String line;
                 while (socket != null && !socket.isClosed() && (line = reader.readLine()) != null) {
-                    String[] split = line.split(";");
-                    String refactoredMessage = "";
-                    if (split.length > 1) {
-                        refactoredMessage = String.join(";", Arrays.copyOfRange(split, 1, split.length));
-                    }
-
-                    Long requestId = null;
-                    try { requestId = Long.parseLong(split[0]); } catch (Exception ignored) {}
-                    if (requestId == null) requestId = 0L;
-
-                    subscriptionService.notifyNotificationRecievers(requestId, refactoredMessage);
+                    if (line.startsWith("Error:")) throw new Exception(line);
+                    subscriptionService.notifyNotificationRecievers(line);
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             } finally {
                 String reason = (socket == null || socket.isClosed()) ? "Socket closed" : "Stream ended";

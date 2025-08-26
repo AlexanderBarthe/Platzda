@@ -2,6 +2,7 @@ package eva.platzda.cli.commands.rest_sub;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.notification_management.SubscriptionService;
+import eva.platzda.cli.notification_management.receivers.SocketNotificationType;
 
 public class RestUnsubscribeCommand implements ConsoleCommand {
     
@@ -23,7 +24,7 @@ public class RestUnsubscribeCommand implements ConsoleCommand {
         }
 
         if(args[0].equals("all")){
-            return subscriptionService.unsubscribeFrommAllTables();
+            return subscriptionService.unsubscribeAllOfType(SocketNotificationType.NOTIFICATION_RESTAURANT);
         }
 
         long id = 0;
@@ -34,6 +35,6 @@ public class RestUnsubscribeCommand implements ConsoleCommand {
             throw new IllegalArgumentException("Invalid restaurant ID");
         }
 
-        return subscriptionService.unsubscribeFromTable(id);
+        return subscriptionService.unsubscribeFromObject(SocketNotificationType.NOTIFICATION_RESTAURANT, id);
     }
 }

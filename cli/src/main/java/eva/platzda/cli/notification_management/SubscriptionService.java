@@ -1,5 +1,9 @@
 package eva.platzda.cli.notification_management;
 
+import eva.platzda.cli.notification_management.receivers.AnswerReceiver;
+import eva.platzda.cli.notification_management.receivers.NotificationReceiver;
+import eva.platzda.cli.notification_management.receivers.SocketNotificationType;
+
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,124 +25,132 @@ public class SubscriptionService {
         socketManager = new SocketManager(this);
     }
 
-    public void addNotificationReciever(NotificationReceiver notificationReceiver) {
-        notificationReceivers.add(notificationReceiver);
-    }
 
-    public void removeNotificationReciever(NotificationReceiver notificationReceiver) {
-        notificationReceivers.remove(notificationReceiver);
-    }
-
-    public String subscribeToTable(Long subscribedId) {
-        return subscribeToTable(new NotificationReceiver(subscribedId, "notification", System.out::println));
-    }
-    
-    public String subscribeToTable(NotificationReceiver subscriber) {
+    public String subscribeToObject(NotificationReceiver subscriber) {
         this.notificationReceivers.add(subscriber);
-        
-        return sendTableSubscribtion(subscriber);
+        return sendObjectSubscription(subscriber);
     }
 
-    private String sendTableSubscribtion(NotificationReceiver subscriber) {
+    private String sendObjectSubscription(NotificationReceiver subscriber) {
         try {
-            return sendAndAwait(generateUniqueId(), "subscribe;" + subscriber.getNotificationId());
+            //Action, Type, Id
+            return sendAndAwait("subscribe;" + subscriber.getNotificationType().getTranslation() + ";" + subscriber.getNotificationId());
         } catch (TimeoutException te) {
             return "Timeout.";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
         }
     }
-    
-    public String unsubscribeFromTable(Long subscribedId) {
 
-        Set<NotificationReceiver> subscribersWithId = notificationReceivers.stream()
-                .filter(notificationReceiver -> notificationReceiver.getNotificationId() == subscribedId)
+    public String unsubscribeFromObject(SocketNotificationType type, Long notificationId) {
+        List<NotificationReceiver> toRemove = notificationReceivers.stream()
+                .filter(nr -> nr.getNotificationType() == type)
+                .filter(nr -> nr.getNotificationId() == notificationId)
+                .toList();
+        toRemove.forEach(notificationReceivers::remove);
+        try {
+            //Action, Type, Id
+            return sendAndAwait("unsubscribe;" + type.getTranslation() + ";" + notificationId);
+        } catch (TimeoutException te) {
+            return "Timeout.";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    public String unsubscribeFromObject(NotificationReceiver subscriber) {
+        this.notificationReceivers.remove(subscriber);
+        try {
+            //Action, Type, Id
+            return sendAndAwait("unsubscribe;" + subscriber.getNotificationType().getTranslation() + ";" + subscriber.getNotificationId());
+        } catch (TimeoutException te) {
+            return "Timeout.";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    public String unsubscribeAllOfType(SocketNotificationType type) {
+        Set<NotificationReceiver> toUnsubscribe = notificationReceivers
+                .stream()
+                .filter(notificationReceiver -> notificationReceiver.getNotificationType() == type)
                 .collect(Collectors.toSet());
-        for(NotificationReceiver subscriber : subscribersWithId) {
-            notificationReceivers.remove(subscriber);
+
+        for(NotificationReceiver receiver : toUnsubscribe) {
+            notificationReceivers.remove(receiver);
         }
 
         try {
-            return sendAndAwait(generateUniqueId(), "unsubscribe;" + subscribedId);
+            //Action, Type
+            return sendAndAwait("unsubscribe;" + type);
         } catch (TimeoutException te) {
             return "Timeout.";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
         }
-        
+
     }
 
-    public String unsubscribeFrommAllTables() {
-        List<NotificationReceiver> tableRecievers = new ArrayList<>();
-        notificationReceivers.stream().filter(nr -> nr.getNotificationType().equals("notification")).forEach(tableRecievers::add);
-        tableRecievers.forEach(notificationReceivers::remove);
+    public String getSubscriptionsOfType(SocketNotificationType type) {
         try {
-            return sendAndAwait(generateUniqueId(), "unsubscribe");
-        } catch (TimeoutException te) {
-            return "Timeout.";
-        } catch (Exception e) {
-            return "Error: " + e.getMessage();
-        }
-    }
-
-    public String getAllTableSubscriptions() {
-        try {
-            String response = sendAndAwait(generateUniqueId(), "get");
-            if(response == null || response.isEmpty()) {
-                return "No subscriptions found";
-            }
-            return response;
+            //Action, Type
+            return sendAndAwait("get;" + type.getTranslation());
         } catch (TimeoutException te) {
             return "Timeout.";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
         }
     }
+
 
     public void resubscribeAll() {
-        Set<NotificationReceiver> tableNotificationReceivers = notificationReceivers.stream().filter(n -> n.getNotificationType().equals("notification")).collect(Collectors.toSet());
+        Set<NotificationReceiver> subscribedObjectReceivers = notificationReceivers
+                .stream()
+                .filter(rec -> rec.getNotificationType() == SocketNotificationType.NOTIFICATION_RESERVATION || rec.getNotificationType() == SocketNotificationType.NOTIFICATION_RESTAURANT)
+                .collect(Collectors.toSet());
 
-        for(NotificationReceiver tableNR : tableNotificationReceivers) {
-            sendTableSubscribtion(tableNR);
+        for(NotificationReceiver subscribedObjectReceiver : subscribedObjectReceivers) {
+            sendObjectSubscription(subscribedObjectReceiver);
         }
+
     }
 
-    public void notifyNotificationRecievers(Long subscribedId, String notification) {
+    public void notifyNotificationRecievers(String msg) {
+        //Type, id, msg
+        String[] args = msg.split(";");
+        if(args.length < 2) throw new IllegalArgumentException("Not enough arguments in message");
+
         for(NotificationReceiver subscriber : notificationReceivers) {
-            if(subscribedId.equals(subscriber.getNotificationId())) {
-                subscriber.notify(notification);
+            if(subscriber.getNotificationType() == SocketNotificationType.fromString(args[0]) && subscriber.getNotificationId() == Long.parseLong(args[1])) {
+                subscriber.notify(args[2]);
             }
         }
     }
 
-
-    private Long generateUniqueId() {
+    public Long generateUniqueId() {
         Random random = new Random();
-        Long id;
+
+        Long result;
+        boolean idExists;
+
         do {
-            id = Math.abs(random.nextLong());
-        } while (isNotificationIdInUse(id));
-        return id;
-    }
+            result = random.nextLong();
+            Long finalResult = result;
+            idExists = notificationReceivers.stream().filter(nr -> nr.getNotificationType() == SocketNotificationType.ANSWER).anyMatch(nr -> nr.getNotificationId() == finalResult);
 
-    private boolean isNotificationIdInUse(Long id) {
-        for(NotificationReceiver subscriber : notificationReceivers) {
-            if(subscriber.getNotificationId() == id) return true;
-        }
-        return false;
-    }
-    
-    public SocketManager getSocketManager() {
-        return socketManager;
+        } while (idExists);
+
+        return result;
     }
 
 
-
-    private String sendAndAwait(Long requestId, String message) throws Exception {
+    private String sendAndAwait(String message) throws Exception {
 
         CompletableFuture<String> future = new CompletableFuture<>();
 
-        NotificationReceiver listener = new NotificationReceiver(requestId, "answer", line -> {
+        Long answerId = generateUniqueId();
+
+        NotificationReceiver answerListener = new AnswerReceiver(answerId, line -> {
             if (line == null) return;
 
             if ("__CONNECTION_CLOSED__".equals(line)) {
@@ -149,17 +161,23 @@ public class SubscriptionService {
             future.complete(line);
         });
 
-        addNotificationReciever(listener);
+        notificationReceivers.add(answerListener);
+
         try {
-            getSocketManager().sendMessage(requestId + ";" + message);
+            //ResponseReceiverId,Action,Type,(Id)
+            getSocketManager().sendMessage(answerListener.getNotificationId() + ";" + message);
             try {
                 return future.get(TIMEOUT, UNIT);
             } catch (TimeoutException te) {
                 throw new TimeoutException("Timeout waiting for response to: " + message);
             }
         } finally {
-            removeNotificationReciever(listener);
+            notificationReceivers.remove(answerListener);
         }
+    }
+
+    public SocketManager getSocketManager() {
+        return socketManager;
     }
 
     
