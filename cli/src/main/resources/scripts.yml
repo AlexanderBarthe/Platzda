@@ -22,9 +22,8 @@ scripts:
     - hours drop
     - log flush
   notification-test:
+    - resv create 1 1 2025-10-01T14:00:00 1
     - time script --silent notification-test-helper
   notification-test-helper:
-      - resv --silent drop
-      - resv --silent create 1 1 2025-10-01T14:00:00 1
-      - await notification_reservation any
-      - resv --silent delete-id 1
+    - await notification_reservation any
+    - resv drop

@@ -4,8 +4,8 @@ import eva.platzda.backend.core.models.OpeningHours;
 import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.models.RestaurantTable;
 import eva.platzda.backend.core.models.Timeslot;
+import eva.platzda.backend.core.repositories.TableRepository;
 import eva.platzda.backend.core.repositories.TimeslotRepository;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,32 +26,30 @@ import java.util.List;
 public class TimeslotGenerationService {
 
     private final TimeslotService timeslotService;
-    private final TableService tableService;
     private final RestaurantService restaurantService;
     private final HoursService hoursService;
     private final TimeslotRepository timeslotRepository;
-    private final int pregenerated_days; // legt fest, für wie viele Tage im vorraus man buchen kann
+    private final int WEEKS_PREGENERATED = 8;
 
+    private final TableRepository tableRepository;
     /**
      * All Args Constructor
      * @param timeslotService
-     * @param tableService
      * @param restaurantService
      * @param hoursService
      * @param timeslotRepository
      */
     @Autowired
-    public TimeslotGenerationService(TimeslotService timeslotService, TableService tableService, RestaurantService restaurantService, HoursService hoursService, TimeslotRepository timeslotRepository) {
-        this.tableService = tableService;
+    public TimeslotGenerationService(TimeslotService timeslotService, RestaurantService restaurantService, HoursService hoursService, TimeslotRepository timeslotRepository, TableRepository tableRepository) {
         this.timeslotService = timeslotService;
         this.restaurantService = restaurantService;
         this.hoursService = hoursService;
         this.timeslotRepository = timeslotRepository;
-        this.pregenerated_days = 14;
+        this.tableRepository = tableRepository;
     }
 
-    public int getPregenerated_days() {
-        return pregenerated_days;
+    public int getPregeneratedWeeks() {
+        return WEEKS_PREGENERATED;
     }
 
     /**
@@ -63,7 +60,7 @@ public class TimeslotGenerationService {
      */
     @Scheduled(cron = "0 0 1 * * *")
     public void publishTimeslotsScheduled() {
-        publishTimeslots(LocalDate.now().plusWeeks(2));
+        publishTimeslots(LocalDate.now().plusWeeks(WEEKS_PREGENERATED));
     }
 
     /**
@@ -80,7 +77,7 @@ public class TimeslotGenerationService {
         for(Restaurant r: allRestaurants) {
             List<Timeslot> slots = createTimeslots(r, targetDate);
             for(Timeslot s: slots) {
-                for(RestaurantTable t: tableService.findAllTablesRestaurant(r.getId())) {
+                for(RestaurantTable t: tableRepository.findByRestaurantId(r.getId())) {
                     Timeslot saved = new Timeslot(t, s.getStartTime(), s.getEndTime(), null);
                     timeslotRepository.saveAndFlush(saved);
                 }

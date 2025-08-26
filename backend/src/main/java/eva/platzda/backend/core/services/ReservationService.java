@@ -303,6 +303,8 @@ public class ReservationService {
      * @param reservation Reservation entity to delete
      */
     public void deleteReservation(Reservation reservation) {
+        if(reservation == null) return;
+
         List<Timeslot> timeslots = timeslotRepository.findTimeslotsForReservation(reservation.getStartTime(), reservation.getEndTime(), reservation.getUser());
         for (Timeslot t: timeslots) {
             t.setUser(null);
@@ -327,6 +329,8 @@ public class ReservationService {
             if(r.getStartTime().toLocalDate().equals(date)) {
                 deleteReservation(r);
             }
+            String msg = "Reservation for table " + r.getRestaurantTable().getId() + " from " + r.getStartTime() + " to " + r.getEndTime() + " has been canceled.";
+            notificationSocket.notifyChange(r, msg);
         }
     }
 
@@ -349,6 +353,11 @@ public class ReservationService {
         for (Timeslot t: timeslotRepository.findAll()){
             t.setUser(null);
         }
+        for(Reservation r: reservationRepository.findAll()){
+            String msg = "Reservation for table " + r.getRestaurantTable().getId() + " from " + r.getStartTime() + " to " + r.getEndTime() + " has been canceled.";
+            notificationSocket.notifyChange(r, msg);
+        }
+
         reservationRepository.deleteAll();
     }
 
