@@ -86,6 +86,12 @@ public class HelpCommand implements ConsoleCommand {
             }
             case "table" -> {
                 Map<String, String> manualDescriptions = new LinkedHashMap<>();
+                manualDescriptions.put("create <restaurant_id> <size>", "Creates a table.");
+                manualDescriptions.put("get <restaurant_id>", "Shows all the tables in a restaurant.");
+                manualDescriptions.put("update <table_id> <restaurant_id> <size>", "Updates a table.");
+                manualDescriptions.put("delete <table_id>", "Deletes a table.");
+                manualDescriptions.put("delete-restaurant <restaurant_id>", "Deletes all tables in a restaurant.");
+                manualDescriptions.put("drop", "Deletes all tables.");
                 return "## List of subcommands for 'table' ##\n\n" + formatManuals(manualDescriptions);
             }
             case "run" -> {

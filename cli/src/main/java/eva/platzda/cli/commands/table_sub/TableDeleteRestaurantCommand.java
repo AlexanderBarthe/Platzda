@@ -6,7 +6,7 @@ import eva.platzda.cli.rest_api.RestClient;
 
 public class TableDeleteRestaurantCommand implements ConsoleCommand {
     @Override
-    public String command(){return "deleteRestaurant";}
+    public String command(){return "delete-restaurant";}
 
     @Override
     public String executeCommand(String[] args) {
