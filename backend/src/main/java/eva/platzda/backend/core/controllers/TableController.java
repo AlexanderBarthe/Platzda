@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * REST endpoints for managing tables of restaurants.
+ */
 @RestController
 @RequestMapping("/table")
 public class TableController {
@@ -28,6 +31,12 @@ public class TableController {
         this.tableService = tableService;
     }
 
+    /**
+     * Returns all tables of a restaurant.
+     *
+     * @param restaurantId ID of the restaurant
+     * @return List of tables as DTOs
+     */
     @GetMapping("/{restaurantId}")
     public ResponseEntity<List<TableDto>> getTables(@PathVariable Long restaurantId){
         List<RestaurantTable> tables = tableService.findAllTablesRestaurant(restaurantId);
@@ -38,6 +47,13 @@ public class TableController {
         return ResponseEntity.ok(tableDtos);
     }
 
+    /**
+     * Creates a new table for a restaurant.
+     *
+     * @param restaurantId ID of the restaurant
+     * @param creationRequestObject Table details for creation
+     * @return Created table as DTO
+     */
     @PostMapping("/{restaurantId}")
     public ResponseEntity<TableDto> createTable(@PathVariable Long restaurantId, @RequestBody TableDto creationRequestObject) {
         Restaurant restaurant = restaurantService.findById(restaurantId);
@@ -53,6 +69,14 @@ public class TableController {
         return ResponseEntity.status(HttpStatus.CREATED).body(TableDto.fromObject(saved));
     }
 
+
+    /**
+     * Updates an existing table.
+     *
+     * @param tableId ID of the table to update
+     * @param table Updated table details
+     * @return Updated table as DTO
+     */
     @PutMapping("/{tableId}")
     public ResponseEntity<TableDto> updateTable(@PathVariable Long tableId, @RequestBody TableDto table) {
         RestaurantTable oldTable = tableService.findById(tableId);
@@ -65,6 +89,11 @@ public class TableController {
         return ResponseEntity.ok(TableDto.fromObject(saved));
     }
 
+    /**
+     * Deletes all tables in the system.
+     *
+     * @return Confirmation message
+     */
     @DeleteMapping
     public ResponseEntity<String> deleteAllTables(){
         tableService.deleteAll();
@@ -72,6 +101,13 @@ public class TableController {
     }
 
 
+
+    /**
+     * Deletes a single table by ID.
+     *
+     * @param tableId ID of the table to delete
+     * @return Confirmation message or 204 if not found
+     */
     @DeleteMapping("/single/{tableId}")
     public ResponseEntity<String> deleteTable(@PathVariable Long tableId) {
         if (tableService.findById(tableId) == null) return ResponseEntity.noContent().build();
@@ -79,6 +115,12 @@ public class TableController {
         return ResponseEntity.ok("Table deleted");
     }
 
+    /**
+     * Deletes all tables of a restaurant.
+     *
+     * @param restaurantId ID of the restaurant
+     * @return Confirmation message or 204 if restaurant not found
+     */
     @DeleteMapping("/restaurant/{restaurantId}")
     public ResponseEntity<String> deleteTableByRestaurant(@PathVariable Long restaurantId) {
         if (restaurantService.findById(restaurantId) == null) return ResponseEntity.noContent().build();

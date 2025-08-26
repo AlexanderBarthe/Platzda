@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * REST endpoints for managing opening hours of restaurants.
+ */
 @RestController
 @RequestMapping("/hours")
 public class HoursController {
@@ -32,9 +35,10 @@ public class HoursController {
     }
 
     /**
+     * Returns all opening hours of a restaurant.
      *
-     * Returns all Opening Hours to a Restaurant with given (restaurant) Id.
-     *
+     * @param restaurantId ID of the restaurant
+     * @return List of opening hours as DTOs
      */
     @GetMapping("/{restaurantId}")
     public ResponseEntity<List<HoursDto>> getHours(@PathVariable Long restaurantId) {
@@ -53,6 +57,15 @@ public class HoursController {
 
     }
 
+
+    /**
+     * Creates new opening hours for a restaurant.
+     *
+     * @param restaurantId ID of the restaurant
+     * @param newHours Opening hours details
+     * @return Created opening hours as DTO
+     * @throws BadRequestBodyException if weekday or times are invalid
+     */
     @PostMapping("/{restaurantId}")
     public ResponseEntity<HoursDto> createHours(@PathVariable Long restaurantId, @RequestBody HoursDto newHours) {
 
@@ -79,6 +92,14 @@ public class HoursController {
         return ResponseEntity.status(HttpStatus.CREATED).body(HoursDto.fromObject(saved));
     }
 
+
+    /**
+     * Updates existing opening hours.
+     *
+     * @param newHours Updated opening hours details
+     * @return Updated opening hours as DTO
+     * @throws BadRequestBodyException if closing time is before opening time
+     */
     @PutMapping()
     public ResponseEntity<HoursDto> updateHours(@RequestBody HoursDto newHours) {
 
@@ -101,6 +122,12 @@ public class HoursController {
 
     }
 
+    /**
+     * Deletes opening hours by their ID.
+     *
+     * @param hoursId ID of the opening hours
+     * @return Confirmation message or 204 if not found
+     */
     @DeleteMapping("/single/{hoursId}")
     public ResponseEntity<String> deleteOpeningHours(@PathVariable Long hoursId) {
         if(hoursService.findById(hoursId) == null) return ResponseEntity.noContent().build();
@@ -108,6 +135,12 @@ public class HoursController {
         return ResponseEntity.ok("Opening hours deleted");
     }
 
+    /**
+     * Deletes all opening hours of a restaurant.
+     *
+     * @param restaurantId ID of the restaurant
+     * @return Confirmation message or 204 if restaurant not found
+     */
     @DeleteMapping("/restaurant/{restaurantId}")
     public ResponseEntity<String> deleteByRestaurant(@PathVariable Long restaurantId) {
         if(restaurantService.findById(restaurantId) == null) return ResponseEntity.noContent().build();
@@ -115,12 +148,15 @@ public class HoursController {
         return ResponseEntity.ok("Opening hours deleted");
     }
 
+    /**
+     * Deletes all opening hours in the system.
+     *
+     * @return Confirmation message
+     */
     @DeleteMapping
     public ResponseEntity<String> deleteAllOpeningHours(){
         hoursService.deleteAllOpeningHours();
         return ResponseEntity.ok("Opening hours deleted");
     }
-
-
 
 }

@@ -18,9 +18,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * REST endpoints for managing reservations.
+ */
 @RestController
 @RequestMapping("/reservation")
 public class ReservationController {
@@ -42,6 +44,16 @@ public class ReservationController {
         this.userService = userService;
     }
 
+    /**
+     * Creates a new reservation for a user at a restaurant.
+     *
+     * @param restaurantId ID of the restaurant
+     * @param userId ID of the user
+     * @param start Start time of the reservation
+     * @param guests Number of guests
+     * @return List of created reservations as DTOs
+     * @throws TooManyBookingsException if the user already has a reservation on the same day
+     */
     @PostMapping
     public ResponseEntity<List<ReservationDto>> createReservation(@RequestParam Long restaurantId,
                                                @RequestParam Long userId,
@@ -57,6 +69,13 @@ public class ReservationController {
         return ResponseEntity.ok(reservationDtos);
     }
 
+    /**
+     * Returns all reservations for a given restaurant and day.
+     *
+     * @param restaurantId ID of the restaurant
+     * @param day Day of the reservations
+     * @return List of reservations as DTOs
+     */
     @GetMapping("/restaurant/{restaurantId}")
     public ResponseEntity<List<ReservationDto>> getReservationsForRestaurant(
             @PathVariable Long restaurantId,
@@ -98,6 +117,14 @@ public class ReservationController {
         return ResponseEntity.ok(result);*/
     }
 
+    /**
+     * Returns all free reservation slots for a given restaurant, day, and number of guests.
+     *
+     * @param restaurantId ID of the restaurant
+     * @param day Day for which free slots are requested
+     * @param guests Number of guests
+     * @return List of available time windows
+     */
     @GetMapping("/restaurant/{restaurantId}/free-slots")
     public ResponseEntity<List<TimeWindow>> getFreeSlots(@PathVariable Long restaurantId,
                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate day,
@@ -107,18 +134,36 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.findFreeSlots(restaurantId, day, open, close, guests));
     }
 
+    /**
+     * Deletes a reservation by its ID.
+     *
+     * @param reservationId ID of the reservation
+     * @return Confirmation message
+     */
     @DeleteMapping("/{reservationId}")
     public ResponseEntity<String> deleteReservationId(@PathVariable Long reservationId) {
         reservationService.deleteReservation(reservationService.findById(reservationId));
         return ResponseEntity.ok("Reservation deleted succesfully");
     }
 
+    /**
+     * Deletes a reservation of a user on a specific day.
+     *
+     * @param userId ID of the user
+     * @param date Date of the reservation
+     * @return Confirmation message
+     */
     @DeleteMapping("/{userId}")
     public ResponseEntity<String> deleteReservationUser(@PathVariable Long userId, @RequestParam LocalDate date){
         reservationService.deleteReservationUserDay(userId, date);
         return ResponseEntity.ok("Reservation deleted succesfully");
     }
 
+    /**
+     * Deletes all reservations in the system.
+     *
+     * @return Confirmation message
+     */
     @DeleteMapping
     public ResponseEntity<String> deleteAllReservation(){
         reservationService.deleteAllReservation();
