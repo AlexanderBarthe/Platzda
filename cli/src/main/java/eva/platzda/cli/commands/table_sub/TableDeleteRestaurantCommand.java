@@ -11,7 +11,7 @@ public class TableDeleteRestaurantCommand implements ConsoleCommand {
     @Override
     public String executeCommand(String[] args) {
         if(args.length == 0){
-            return "Not enough arguments provided. See 'help rest' for more information.";
+            return "Not enough arguments provided. See 'help table' for more information.";
         }
 
         Long restaurantId;

@@ -21,6 +21,9 @@ public class HelpCommand implements ConsoleCommand {
             manualDescriptions.put("exit", "Close this CLI");
             manualDescriptions.put("user", "Commands for user management");
             manualDescriptions.put("rest", "Commands for restaurants management");
+            manualDescriptions.put("resv", "Commands for reservation management");
+            manualDescriptions.put("hours", "Commands for opening hour management");
+            manualDescriptions.put("table", "Commands for table management");
             manualDescriptions.put("run <amount> <options> <command>", "Runs other commands multiple times");
             manualDescriptions.put("time <command | option>", "Use to track runtime of the specified command or receive stat data");
             manualDescriptions.put("await <ids>", "Awaits notifications on table id. Only usable in scripts. Example for ids: 1-3,4,6-9,10");
@@ -59,6 +62,31 @@ public class HelpCommand implements ConsoleCommand {
                 manualDescriptions.put("get-subs", "Get list of subscribed restaurants");
                 manualDescriptions.put("search <taglist>", "Search for restaurants by tags. sperate tags by ','.");
                 return "## List of subcommands for 'rest' ##\n\n" + formatManuals(manualDescriptions);
+            }
+            case "resv" -> {
+                Map<String, String> manualDescriptions = new LinkedHashMap<>();
+                manualDescriptions.put("create <restaurant_id> <user_id> <LocalDateTime: start> <guest_count>", "Creates a reservation.");
+                manualDescriptions.put("delete-id <reservation_id>", "Deletes the reservation with given id.");
+                manualDescriptions.put("delete-user <user_id>", "Deletes all reservations of a user.");
+                manualDescriptions.put("get <restaurant_id> <date>", "Shows all reservations for a day in a restaurant.");
+                manualDescriptions.put("drop", "Deletes all reservation.");
+                manualDescriptions.put("get-slots <restaurant_id> <date> <guest_count>", "Shows all available timeslots for a restaurant.");
+                return "## List of subcommands for 'resv' ##\n\n" + formatManuals(manualDescriptions);
+            }
+            case "hours" -> {
+                Map<String, String> manualDescriptions = new LinkedHashMap<>();
+                manualDescriptions.put("create <restaurant_id> <weekday> <opening_time> <closing_time>", "Creates the opening hours for a specific weekday and restaurant. " +
+                        "Weekday should be an int where 1 represents monday and 7 sunday.");
+                manualDescriptions.put("get <restaurant_id>", "Shows the opening times for a restaurant.");
+                manualDescriptions.put("update <hours_id> <restaurant_id> <weekday> <opening-time> <closing-time>", "Updates the opening times of a restaurant.");
+                manualDescriptions.put("delete <hours_id>", "Deletes an opening time.");
+                manualDescriptions.put("delte-restaurant <restaurant_id>", "Deletes all opening hours for a restaurant.");
+                manualDescriptions.put("drop", "Deletes all opening hours.");
+                return "## List of subcommands for 'hours' ##\n\n" + formatManuals(manualDescriptions);
+            }
+            case "table" -> {
+                Map<String, String> manualDescriptions = new LinkedHashMap<>();
+                return "## List of subcommands for 'table' ##\n\n" + formatManuals(manualDescriptions);
             }
             case "run" -> {
                 return """
