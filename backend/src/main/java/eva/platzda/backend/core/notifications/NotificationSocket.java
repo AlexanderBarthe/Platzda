@@ -308,7 +308,6 @@ public class NotificationSocket implements InitializingBean, DisposableBean {
         Long changedReservationId = reservation.getId();
         Long restaurantId = reservation.getRestaurantTable().getRestaurant().getId();
 
-
         notificationListeners.forEach(ne -> {
 
             NotificationType listenerNotificationType = ne.getType();

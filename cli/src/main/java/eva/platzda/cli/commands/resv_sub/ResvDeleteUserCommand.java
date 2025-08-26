@@ -19,7 +19,7 @@ public class ResvDeleteUserCommand implements ConsoleCommand {
 
         try {
             userId = Long.parseLong(args[0]);
-            return RestClient.sendRequest("reservation/" + userId, HttpMethod.DELETE, null);
+            return RestClient.sendRequest("reservation/user/" + userId, HttpMethod.DELETE, null);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid user ID");
         }

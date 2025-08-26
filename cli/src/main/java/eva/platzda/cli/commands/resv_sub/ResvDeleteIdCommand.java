@@ -22,6 +22,6 @@ public class ResvDeleteIdCommand implements ConsoleCommand {
         } catch (NumberFormatException e)  {
             throw new IllegalArgumentException("Invalid reservation ID");
         }
-        return RestClient.sendRequest("reservation/" + reservationId, HttpMethod.DELETE, null);
+        return RestClient.sendRequest("reservation/id/" + reservationId, HttpMethod.DELETE, null);
     }
 }

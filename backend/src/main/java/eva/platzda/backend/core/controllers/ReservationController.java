@@ -140,7 +140,7 @@ public class ReservationController {
      * @param reservationId ID of the reservation
      * @return Confirmation message
      */
-    @DeleteMapping("/{reservationId}")
+    @DeleteMapping("/id/{reservationId}")
     public ResponseEntity<String> deleteReservationId(@PathVariable Long reservationId) {
         reservationService.deleteReservation(reservationService.findById(reservationId));
         return ResponseEntity.ok("Reservation deleted succesfully");
@@ -153,7 +153,7 @@ public class ReservationController {
      * @param date Date of the reservation
      * @return Confirmation message
      */
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/user/{userId}")
     public ResponseEntity<String> deleteReservationUser(@PathVariable Long userId, @RequestParam LocalDate date){
         reservationService.deleteReservationUserDay(userId, date);
         return ResponseEntity.ok("Reservation deleted succesfully");

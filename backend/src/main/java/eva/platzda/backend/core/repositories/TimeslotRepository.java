@@ -25,8 +25,8 @@ public interface TimeslotRepository extends JpaRepository<Timeslot, Long> {
             AND t.endTime <= :end
             AND t.user = :user
 """)
-    List<Timeslot> findTimeslotsForReservation(@Param("startTime") LocalDateTime start,
-                                               @Param("endTime") LocalDateTime end,
+    List<Timeslot> findTimeslotsForReservation(@Param("start") LocalDateTime start,
+                                               @Param("end") LocalDateTime end,
                                                @Param("user") User user);
 
     @Query("""

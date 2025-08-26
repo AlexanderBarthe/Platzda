@@ -247,12 +247,14 @@ public class ReservationService {
             throw new NotEnoughCapacityException();
         }
 
-        for (Reservation r: reservations) {
+        List<Reservation> savedReservations = reservationRepository.saveAll(reservations);
+
+        for (Reservation r: savedReservations) {
             String msg = "Reservation for table " + r.getRestaurantTable().getId() + " has been booked from " + r.getStartTime() + " to " + r.getEndTime();
             notificationSocket.notifyChange(r, msg);
         }
 
-        return reservationRepository.saveAll(reservations);
+        return savedReservations;
     }
 
     /**
