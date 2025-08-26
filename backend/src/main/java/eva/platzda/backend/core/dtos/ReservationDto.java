@@ -8,12 +8,14 @@ import java.time.LocalDateTime;
 
 public class ReservationDto {
 
+    private Long id;
     private Long userId;
     private int guests;
     private LocalDateTime start;
     private LocalDateTime end;
 
-    public ReservationDto(Long userId, int guests, LocalDateTime start, LocalDateTime end){
+    public ReservationDto(Long id, Long userId, int guests, LocalDateTime start, LocalDateTime end){
+        this.id = id;
         this.userId = userId;
         this.guests = guests;
         this.start = start;
@@ -21,10 +23,19 @@ public class ReservationDto {
     }
 
     public static ReservationDto toDto(Reservation reservation) {
-        return new ReservationDto(reservation.getUser().getId(),
+        return new ReservationDto(reservation.getId(),
+                reservation.getUser().getId(),
                 reservation.getNumberOfGuests(),
                 reservation.getStartTime(),
                 reservation.getEndTime());
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getUser() {

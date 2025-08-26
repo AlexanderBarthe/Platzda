@@ -8,7 +8,7 @@ import eva.platzda.cli.notification_management.SubscriptionService;
 public class ResvCommand extends CommandExecutor implements ConsoleCommand {
 
     public ResvCommand(SubscriptionService subscriptionService){
-        super(new ResvCreateCommand(),
+        super(new ResvCreateCommand(subscriptionService),
                 new ResvDeleteIdCommand(),
                 new ResvDeleteUserCommand(),
                 new ResvDropCommand(),

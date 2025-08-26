@@ -57,6 +57,8 @@ public class ScriptCommand implements ConsoleCommand {
 
         ConcurrentHashMap<Long, CompletableFuture<String>> futures = new ConcurrentHashMap<>();
 
+        System.out.println("Starting script execution...");
+
         for(String command : commands){
             if(command.startsWith("await")) {
 

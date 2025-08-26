@@ -9,7 +9,7 @@ import java.time.LocalDate;
 public class ResvGetSlotsCommand implements ConsoleCommand {
 
     @Override
-    public String command(){return "getSlots";}
+    public String command(){return "get-slots";}
 
     @Override
     public String executeCommand(String[] args) {

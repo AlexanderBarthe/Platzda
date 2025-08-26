@@ -4,7 +4,7 @@ package eva.platzda.backend.error_handling;
 public class NotEnoughCapacityException extends RuntimeException {
 
     public  NotEnoughCapacityException() {
-        super("Zur gewuenschten Zeit ist nicht genug Platz verfuegbar");
+        super("Not enough capacity at that point in time.");
 
     }
 

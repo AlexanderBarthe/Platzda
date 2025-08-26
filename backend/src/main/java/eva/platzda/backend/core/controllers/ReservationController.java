@@ -7,6 +7,7 @@ import eva.platzda.backend.core.services.HoursService;
 import eva.platzda.backend.core.services.ReservationService;
 import eva.platzda.backend.core.services.RestaurantService;
 import eva.platzda.backend.core.services.UserService;
+import eva.platzda.backend.error_handling.TooManyBookingsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,7 +49,7 @@ public class ReservationController {
                                                @RequestParam int guests) {
 
         if(reservationService.checkSingleReservationDay(userId, start.toLocalDate())) {
-            throw new IllegalStateException("User already has a reservation on this day");
+            throw new TooManyBookingsException("User already has a reservation on this day");
         }
 
         List<ReservationDto> reservationDtos = reservationService.bookSlot(restaurantId, userId, start, guests).stream().map(ReservationDto::toDto).toList();
@@ -62,6 +64,14 @@ public class ReservationController {
 
         List<Reservation> reservation = reservationService.findReservationsForRestaurant(restaurantService.findById(restaurantId), day);
 
+        List<ReservationDto> dtos = reservation.stream()
+                .map(ReservationDto::toDto)
+                .sorted(Comparator.comparing(ReservationDto::getUser).thenComparing(ReservationDto::getStart))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
+
+        /*
         Map<Long, List<Reservation>> groupedByUser = reservation.stream()
                 .collect(Collectors.groupingBy(res -> res.getUser().getId()));
 
@@ -84,7 +94,8 @@ public class ReservationController {
                 })
                 .toList();
 
-        return ResponseEntity.ok(result);
+        //List<ReservationDto> result = reservation.stream().map(ReservationDto::toDto).toList();
+        return ResponseEntity.ok(result);*/
     }
 
     @GetMapping("/restaurant/{restaurantId}/free-slots")

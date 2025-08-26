@@ -1,6 +1,10 @@
 package eva.platzda.cli.commands.resv_sub;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eva.platzda.cli.commands.execution.ConsoleCommand;
+import eva.platzda.cli.notification_management.SubscriptionService;
+import eva.platzda.cli.notification_management.receivers.ReservationSubscriber;
 import eva.platzda.cli.rest_api.HttpMethod;
 import eva.platzda.cli.rest_api.RestClient;
 
@@ -8,13 +12,19 @@ import java.time.LocalDateTime;
 
 public class ResvCreateCommand implements ConsoleCommand {
 
+    private final SubscriptionService subscriptionService;
+
+    public ResvCreateCommand(SubscriptionService subscriptionService) {
+        this.subscriptionService = subscriptionService;
+    }
+
     @Override
     public String command(){return "create";}
 
     @Override
     public String executeCommand(String[] args) {
         if(args.length == 0) {
-            return "Not enough arguments provided. See 'help rest' for more information.";
+            return "Not enough arguments provided. See 'help resv' for more information.";
         }
         Long restaurantId;
         Long userId;
@@ -49,7 +59,21 @@ public class ResvCreateCommand implements ConsoleCommand {
                 + "&userId=" + userId
                 + "&start=" + start
                 + "&guests=" + guests;
-        return RestClient.sendRequest(url, HttpMethod.POST, json);
+        String response = RestClient.sendRequest(url, HttpMethod.POST, json);
+
+        //Subscribe to created reservation if successful
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode root = mapper.readTree(response);
+            if (root.has("id")) {
+                Long id = Long.parseLong(root.get("id").asText());
+                subscriptionService.subscribeToObject(new ReservationSubscriber(id, System.out::println));
+            }
+        } catch (Exception ignored) {}
+
+        return response;
 
     }
+
+
 }
