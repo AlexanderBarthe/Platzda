@@ -24,7 +24,6 @@ public class HoursDto {
     public static HoursDto fromObject(OpeningHours hours) {
         if(hours == null) return null;
 
-        //Long restaurantId = (hours.getRestaurant() == null) ? null : hours.getRestaurant().getId();
 
         return new HoursDto(
                 hours.getId(),

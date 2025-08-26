@@ -84,7 +84,6 @@ public class ReservationController {
                 })
                 .toList();
 
-        //List<ReservationDto> result = reservation.stream().map(ReservationDto::toDto).toList();
         return ResponseEntity.ok(result);
     }
 

@@ -7,9 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Month;
 
 @Component
 public class DataLoader implements CommandLineRunner {
@@ -17,7 +15,6 @@ public class DataLoader implements CommandLineRunner {
     private final TableRepository tableRepository;
     private final RestaurantRepository restaurantRepository;
     private final HoursRepository hoursRepository;
-    private final TimeslotRepository timeslotRepository;
     private final TimeslotGenerationService service;
     private final UserRepository userRepository;
 
@@ -25,13 +22,11 @@ public class DataLoader implements CommandLineRunner {
     public DataLoader(TableRepository tableRepository,
                       RestaurantRepository restaurantRepository,
                       HoursRepository hoursRepository,
-                      TimeslotRepository timeslotRepository,
                       UserRepository userRepository,
                       TimeslotGenerationService service) {
         this.tableRepository = tableRepository;
         this.restaurantRepository = restaurantRepository;
         this.hoursRepository = hoursRepository;
-        this.timeslotRepository = timeslotRepository;
         this.userRepository = userRepository;
         this.service = service;
     }
@@ -79,7 +74,7 @@ public class DataLoader implements CommandLineRunner {
             userRepository.save(new User("Bulian", "test@test.de"));
         }
 
-        for (int i = 1; i <= 14; i++){
+        for (int i = 0; i <= 14; i++){
             service.publishTimeslots(LocalDate.now().plusDays(i));
         }
     }
