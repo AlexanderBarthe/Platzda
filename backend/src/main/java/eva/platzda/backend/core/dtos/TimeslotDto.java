@@ -12,6 +12,15 @@ public class TimeslotDto {
     private Long userid;
     private Long table;
 
+    /**
+     * Creates a new TimeslotDto.
+     *
+     * @param id ID of the timeslot
+     * @param starttime Start time of the timeslot
+     * @param endtime End time of the timeslot
+     * @param userid ID of the user that booked the timeslot
+     * @param table ID of the reserved table
+     */
     public TimeslotDto(Long id, LocalDateTime starttime, LocalDateTime endtime,Long userid, Long table) {
         this.id = id;
         this.starttime = starttime;
@@ -20,6 +29,12 @@ public class TimeslotDto {
         this.table = table;
     }
 
+    /**
+     * Converts a Timeslot entity into a TimeslotDto.
+     *
+     * @param timeslot Timeslot entity
+     * @return TimeslotDto with mapped values
+     */
     public static TimeslotDto fromObject(Timeslot timeslot){
         if(timeslot==null) return null;
 

@@ -64,7 +64,7 @@ public class ReservationController {
             throw new TooManyBookingsException("User already has a reservation on this day");
         }
 
-        List<ReservationDto> reservationDtos = reservationService.bookSlot(restaurantId, userId, start, guests).stream().map(ReservationDto::toDto).toList();
+        List<ReservationDto> reservationDtos = reservationService.bookSlot(restaurantId, userId, start, guests).stream().map(ReservationDto::fromObject).toList();
 
         return ResponseEntity.ok(reservationDtos);
     }
@@ -84,7 +84,7 @@ public class ReservationController {
         List<Reservation> reservation = reservationService.findReservationsForRestaurant(restaurantService.findById(restaurantId), day);
 
         List<ReservationDto> dtos = reservation.stream()
-                .map(ReservationDto::toDto)
+                .map(ReservationDto::fromObject)
                 .sorted(Comparator.comparing(ReservationDto::getUser).thenComparing(ReservationDto::getStart))
                 .collect(Collectors.toList());
 

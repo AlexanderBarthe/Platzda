@@ -16,9 +16,21 @@ public class RestaurantDto {
     private Integer timeSlotDuration;
     private List<String> tags;
 
+    /**
+     * No Args Constructor
+     */
     public RestaurantDto() {
     }
 
+    /**
+     * All Args Constructor
+     *
+     * @param id ID of the restaurant
+     * @param address Address of the restaurant
+     * @param ownerId ID of the restaurant owner
+     * @param timeSlotDuration Duration of a reservation time slot (in minutes)
+     * @param tags Tags associated with the restaurant
+     */
     public RestaurantDto(Long id, String address, Long ownerId, Integer timeSlotDuration, List<String> tags) {
         this.id = id;
         this.address = address;
@@ -27,6 +39,12 @@ public class RestaurantDto {
         this.tags = tags;
     }
 
+    /**
+     * Converts a Restaurant entity into a RestaurantDto.
+     *
+     * @param r Restaurant entity
+     * @return RestaurantDto with mapped values
+     */
     public static RestaurantDto fromObject(Restaurant r) {
         if (r == null) return null;
 

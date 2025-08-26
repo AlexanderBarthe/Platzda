@@ -5,6 +5,9 @@ import eva.platzda.backend.core.models.OpeningHours;
 
 import java.time.LocalTime;
 
+/**
+ * Dto for wrapping up reservations as their ids
+ */
 public class HoursDto {
 
     private Long id;
@@ -13,6 +16,15 @@ public class HoursDto {
     private LocalTime openingTime;
     private LocalTime closingTime;
 
+    /**
+     * All Args Constructor
+     *
+     * @param id ID of the opening hours entry
+     * @param restaurant ID of the restaurant
+     * @param weekday Weekday of the opening hours (1 = Monday, 7 = Sunday)
+     * @param openingTime Opening time
+     * @param closingTime Closing time
+     */
     public HoursDto(Long id, Long restaurant, Integer weekday, LocalTime openingTime, LocalTime closingTime) {
         this.id = id;
         this.restaurantId = restaurant;
@@ -21,6 +33,12 @@ public class HoursDto {
         this.closingTime = closingTime;
     }
 
+    /**
+     * Converts an OpeningHours entity into an HoursDto.
+     *
+     * @param hours OpeningHours entity
+     * @return HoursDto with mapped values
+     */
     public static HoursDto fromObject(OpeningHours hours) {
         if(hours == null) return null;
 

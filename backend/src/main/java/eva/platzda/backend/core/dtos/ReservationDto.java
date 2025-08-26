@@ -2,10 +2,12 @@ package eva.platzda.backend.core.dtos;
 
 
 import eva.platzda.backend.core.models.Reservation;
-import eva.platzda.backend.core.models.User;
 
 import java.time.LocalDateTime;
 
+/**
+ * Dto for wrapping up reservations as their ids
+ */
 public class ReservationDto {
 
     private Long id;
@@ -14,6 +16,15 @@ public class ReservationDto {
     private LocalDateTime start;
     private LocalDateTime end;
 
+    /**
+     * All Args Constructor
+     *
+     * @param id ID of the reservation
+     * @param userId ID of the user who made the reservation
+     * @param guests Number of guests
+     * @param start Start time of the reservation
+     * @param end End time of the reservation
+     */
     public ReservationDto(Long id, Long userId, int guests, LocalDateTime start, LocalDateTime end){
         this.id = id;
         this.userId = userId;
@@ -22,7 +33,13 @@ public class ReservationDto {
         this.end = end;
     }
 
-    public static ReservationDto toDto(Reservation reservation) {
+    /**
+     * Converts a Reservation entity into a ReservationDto.
+     *
+     * @param reservation Reservation entity
+     * @return ReservationDto with mapped values
+     */
+    public static ReservationDto fromObject(Reservation reservation) {
         return new ReservationDto(reservation.getId(),
                 reservation.getUser().getId(),
                 reservation.getNumberOfGuests(),

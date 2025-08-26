@@ -14,8 +14,18 @@ public class UserDto {
     private String email;
     private List<Long> flags; // nur IDs
 
+    /**
+     * No Args constructor
+     */
     public UserDto() {}
 
+    /**
+     * All Args Constructor
+     * @param id ID of the user
+     * @param name Name of the user
+     * @param email Email Adress of the user
+     * @param flags
+     */
     public UserDto(Long id, String name, String email, List<Long> flags) {
         this.id = id;
         this.name = name;
@@ -23,6 +33,12 @@ public class UserDto {
         this.flags = flags;
     }
 
+    /**
+     * Converts a User entity into a UserDto.
+     *
+     * @param user User entity
+     * @return UserDto with mapped values
+     */
     public static UserDto fromObject(User user) {
         List<Long> flagIds = user.getFlags().stream()
                 .map(Restaurant::getId)
