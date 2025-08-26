@@ -7,7 +7,7 @@ import eva.platzda.cli.rest_api.RestClient;
 public class ResvDeleteIdCommand implements ConsoleCommand {
 
     @Override
-    public String command(){return "deleteId";}
+    public String command(){return "delete-id";}
 
     @Override
     public String executeCommand(String[] args) {
