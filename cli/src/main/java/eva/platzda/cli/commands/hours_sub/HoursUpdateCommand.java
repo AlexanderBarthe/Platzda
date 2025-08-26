@@ -14,7 +14,7 @@ public class HoursUpdateCommand implements ConsoleCommand {
     @Override
     public String executeCommand(String[] args) {
         if(args.length == 0){
-            return "Not enough arguments provided. See 'help rest' for more information.";
+            return "Not enough arguments provided. See 'help hours' for more information.";
         }
         Long id;
         Long restaurantId;
