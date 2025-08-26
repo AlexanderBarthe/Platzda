@@ -61,7 +61,6 @@ public class ReservationService {
         this.em = em;
     }
 
-
     /**
      * Checks whether a list of timeslots is continuous in time.
      *

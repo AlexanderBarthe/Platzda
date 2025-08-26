@@ -4,17 +4,20 @@ import eva.platzda.backend.core.models.OpeningHours;
 import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.models.RestaurantTable;
 import eva.platzda.backend.core.models.Timeslot;
+import eva.platzda.backend.core.repositories.HoursRepository;
 import eva.platzda.backend.core.repositories.TableRepository;
 import eva.platzda.backend.core.repositories.TimeslotRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service for generating and publishing timeslots for restaurants.
@@ -27,25 +30,20 @@ public class TimeslotGenerationService {
 
     private final TimeslotService timeslotService;
     private final RestaurantService restaurantService;
-    private final HoursService hoursService;
     private final TimeslotRepository timeslotRepository;
     private final int WEEKS_PREGENERATED = 8;
 
     private final TableRepository tableRepository;
-    /**
-     * All Args Constructor
-     * @param timeslotService
-     * @param restaurantService
-     * @param hoursService
-     * @param timeslotRepository
-     */
+    private final HoursRepository hoursRepository;
+
+
     @Autowired
-    public TimeslotGenerationService(TimeslotService timeslotService, RestaurantService restaurantService, HoursService hoursService, TimeslotRepository timeslotRepository, TableRepository tableRepository) {
+    public TimeslotGenerationService(TimeslotService timeslotService, RestaurantService restaurantService, TimeslotRepository timeslotRepository, TableRepository tableRepository, HoursRepository hoursRepository) {
         this.timeslotService = timeslotService;
         this.restaurantService = restaurantService;
-        this.hoursService = hoursService;
         this.timeslotRepository = timeslotRepository;
         this.tableRepository = tableRepository;
+        this.hoursRepository = hoursRepository;
     }
 
     public int getPregeneratedWeeks() {
@@ -108,7 +106,7 @@ public class TimeslotGenerationService {
         List<Timeslot> slots = new ArrayList<>();
 
         DayOfWeek weekday = date.getDayOfWeek();
-        List<OpeningHours> allHours = hoursService.findByWeekday(weekday.getValue(), r.getId());
+        List<OpeningHours> allHours = hoursRepository.findByWeekday(weekday.getValue(), r.getId());
         if (allHours == null) {
             return new ArrayList<>();
         }
@@ -127,5 +125,138 @@ public class TimeslotGenerationService {
         }
 
         return slots;
+    }
+
+    /**
+     *
+     * Adds or removes timeslots for updated opening hours.
+     * Won't affect timeslots booked by users
+     *
+     * @param restaurant Restaurant with new opening hours.
+     */
+    @Transactional
+    public void updateTimeslots(Restaurant restaurant) {
+        Objects.requireNonNull(restaurant, "restaurant must not be null");
+
+        List<OpeningHours> openingHours = hoursRepository.findByRestaurantId(restaurant.getId());
+        List<Timeslot> existingSlots = timeslotRepository.findByRestaurantId(restaurant.getId());
+        List<RestaurantTable> tables = tableRepository.findByRestaurantId(restaurant.getId());
+
+        if (tables.isEmpty()) {
+            return;
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate minDate = existingSlots.stream()
+                .map(ts -> ts.getStartTime().toLocalDate())
+                .min(Comparator.naturalOrder())
+                .orElse(today);
+
+        LocalDate startDate = minDate.isBefore(today) ? minDate : today;
+        LocalDate endDate = today.plusDays(WEEKS_PREGENERATED*7);
+
+        //Map weekday -> OpeningHours (for multiple entries per weekday)
+        Map<Integer, List<OpeningHours>> ohByWeekday = openingHours.stream()
+                .collect(Collectors.groupingBy(OpeningHours::getWeekday));
+
+        //Build expected start times per date (same for all tables)
+        Set<LocalDateTime> expectedStarts = new HashSet<>();
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            int weekday = date.getDayOfWeek().getValue(); //Monday=1 ... Sunday=7
+            List<OpeningHours> ohList = ohByWeekday.getOrDefault(weekday, Collections.emptyList());
+            for (OpeningHours oh : ohList) {
+                List<LocalDateTime> starts = generateStartsForOpening(date, oh);
+                expectedStarts.addAll(starts);
+            }
+        }
+
+        //Index existing slots
+        Map<Long, Map<LocalDateTime, Timeslot>> existingByTable = new HashMap<>();
+        for (RestaurantTable table : tables) {
+            existingByTable.put(table.getId(), new HashMap<>());
+        }
+        for (Timeslot ts : existingSlots) {
+            if (ts.getTable() == null || ts.getStartTime() == null) continue;
+            Long tableId = ts.getTable().getId();
+            if (!existingByTable.containsKey(tableId)) continue;
+            existingByTable.get(tableId).put(ts.getStartTime(), ts);
+        }
+
+        List<Timeslot> toCreate = new ArrayList<>();
+        List<Timeslot> toDelete = new ArrayList<>();
+
+        //Compare expected vs existing starts
+        for (RestaurantTable table : tables) {
+            Map<LocalDateTime, Timeslot> existingForTable = existingByTable.getOrDefault(table.getId(), Collections.emptyMap());
+
+            //Create missing starts
+            for (LocalDateTime start : expectedStarts) {
+                if (!existingForTable.containsKey(start)) {
+                    Timeslot newTs = new Timeslot();
+                    newTs.setTable(table);
+                    newTs.setStartTime(start);
+                    newTs.setEndTime(start.plusMinutes(15));
+                    newTs.setUser(null);
+                    toCreate.add(newTs);
+                }
+            }
+
+            //Deleting slots not within opening hours
+            for (Map.Entry<LocalDateTime, Timeslot> entry : existingForTable.entrySet()) {
+                LocalDateTime start = entry.getKey();
+                Timeslot ts = entry.getValue();
+                if (!expectedStarts.contains(start)) {
+                    //Not deleting if slot is booked
+                    if (ts.getUser() == null) {
+                        toDelete.add(ts);
+                    }
+                }
+            }
+        }
+
+        // Persist
+        if (!toDelete.isEmpty()) {
+            timeslotRepository.deleteAll(toDelete);
+        }
+        if (!toCreate.isEmpty()) {
+            timeslotRepository.saveAll(toCreate);
+        }
+    }
+
+    /**
+     * Generiert für ein konkretes OpeningHours-Intervall (an einem Datum) alle Startzeiten
+     * im 15-Minuten-Raster. Schließzeit ist exklusiv: ein Slot darf nur starten, wenn
+     * start + 15min <= closingTime.
+     */
+    private List<LocalDateTime> generateStartsForOpening(LocalDate date, OpeningHours oh) {
+        List<LocalDateTime> result = new ArrayList<>();
+        LocalTime open = oh.getOpeningTime();
+        LocalTime close = oh.getClosingTime();
+
+        if (open == null || close == null) return result;
+
+        // Wenn close <= open => kein Intervall (oder ggf. über Mitternacht nicht unterstützt)
+        if (!close.isAfter(open)) {
+            return result;
+        }
+
+        //catching cases where times are not quarter-hours
+        LocalTime cursor = alignToQuarter(open);
+        LocalDateTime dtCursor = LocalDateTime.of(date, cursor);
+        LocalDateTime dtClose = LocalDateTime.of(date, close);
+
+        while (!dtCursor.plusMinutes(15).isAfter(dtClose)) { //ensure slot fits
+            result.add(dtCursor);
+            dtCursor = dtCursor.plusMinutes(15);
+        }
+        return result;
+    }
+
+    private LocalTime alignToQuarter(LocalTime t) {
+        int minute = t.getMinute();
+        int quarters = (minute + 7) / 15;
+        int aligned = quarters * 15;
+        if (aligned >= 60) aligned = 45; //Fallback
+        return LocalTime.of(t.getHour(), aligned, 0);
     }
 }

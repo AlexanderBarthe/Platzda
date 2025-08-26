@@ -2,12 +2,17 @@ package eva.platzda.backend.core.services;
 
 
 import eva.platzda.backend.core.models.OpeningHours;
+import eva.platzda.backend.core.models.Reservation;
+import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.repositories.HoursRepository;
+import eva.platzda.backend.core.repositories.RestaurantRepository;
+import eva.platzda.backend.core.repositories.TimeslotRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Time;
 import java.util.List;
 
 /**
@@ -18,20 +23,19 @@ import java.util.List;
 @Service
 public class HoursService {
 
+    private final TimeslotGenerationService timeslotGenerationService;
+
     private final HoursRepository hoursRepository;
 
     private final EntityManager em;
+    private final TimeslotRepository timeslotRepository;
 
-    /**
-     * Constructs a new HoursService with the given repository.
-     *
-     * @param hoursRepository Repository for OpeningHours entities
-     * @param em EntityManager
-     */
     @Autowired
-    public HoursService(HoursRepository hoursRepository, EntityManager em) {
+    public HoursService(HoursRepository hoursRepository, TimeslotGenerationService timeslotGenerationService, EntityManager em, TimeslotRepository timeslotRepository) {
         this.hoursRepository = hoursRepository;
+        this.timeslotGenerationService = timeslotGenerationService;
         this.em = em;
+        this.timeslotRepository = timeslotRepository;
     }
 
     /**
@@ -76,7 +80,11 @@ public class HoursService {
     @Transactional
     public OpeningHours createOpeningHours(OpeningHours hours) {
         hours.setId(null);
-        return hoursRepository.save(hours);
+        OpeningHours saved = hoursRepository.save(hours);
+
+        timeslotGenerationService.updateTimeslots(hours.getRestaurant());
+
+        return saved;
     }
 
 
@@ -87,7 +95,12 @@ public class HoursService {
      * @return The updated OpeningHours entity
      */
     @Transactional
-    public OpeningHours updateOpeningHours(OpeningHours hours) {return hoursRepository.save(hours);}
+    public OpeningHours updateOpeningHours(OpeningHours hours) {
+
+        OpeningHours saved = hoursRepository.save(hours);
+        timeslotGenerationService.updateTimeslots(hours.getRestaurant());
+        return saved;
+    }
 
     /**
      * Deletes an opening hours entry by its ID.
@@ -95,7 +108,12 @@ public class HoursService {
      * @param id ID of the entry to delete
      */
     @Transactional
-    public void deleteOpeningHoursById(Long id) {hoursRepository.deleteById(id);}
+    public void deleteOpeningHoursById(Long id) {
+        Restaurant restaurant = hoursRepository.findById(id).get().getRestaurant();
+
+        hoursRepository.deleteById(id);
+        timeslotGenerationService.updateTimeslots(restaurant);
+    }
 
     /**
      * Deletes all opening hours for a specific restaurant.
@@ -104,7 +122,9 @@ public class HoursService {
      */
     @Transactional
     public void deleteOpeningHoursOfRestaurant(Long restaurantId) {
+        Restaurant restaurant = hoursRepository.findById(restaurantId).get().getRestaurant();
         hoursRepository.deleteByRestaurantId(restaurantId);
+        timeslotGenerationService.updateTimeslots(restaurant);
     }
 
     /**
@@ -114,5 +134,6 @@ public class HoursService {
     public void deleteAllOpeningHours() {
         hoursRepository.deleteAll();
         em.createNativeQuery("ALTER TABLE opening_hours ALTER COLUMN id RESTART WITH 1").executeUpdate();
+        timeslotRepository.deleteAll();
     }
 }

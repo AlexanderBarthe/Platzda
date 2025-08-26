@@ -57,4 +57,8 @@ SELECT t FROM Timeslot t
 WHERE t.user = :user
 """)
     List<Timeslot> findSlotsUser(@Param("user") User user);
+
+    @Query("SELECT t FROM Timeslot  t WHERE t.table.restaurant.id = :restaurantId")
+    List<Timeslot> findByRestaurantId(@Param("restaurantId") Long restaurantId);
+
 }

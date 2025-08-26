@@ -43,11 +43,9 @@ public class HoursCreateCommand implements ConsoleCommand {
             throw new IllegalArgumentException("Invalid closing Time.");
         }
 
-        String json = "{\"id\": " + null +","+
-                "\"restaurantId\":" + restaurantId + ","+
-                "\"weekday\":" + weekday + ","+
-                "\"openingTime\"" + openingTime + ","+
-                "\"closingTime\":" + closingTime +
+        String json = "{\"weekday\":" + weekday + ","+
+                "\"openingTime\":\"" + openingTime + "\"," +
+                "\"closingTime\":\"" + closingTime + "\"" +
                 "}";
         return RestClient.sendRequest("hours/"+restaurantId, HttpMethod.POST, json);
     }

@@ -4,6 +4,7 @@ import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.repositories.RestaurantRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -93,6 +94,7 @@ public class RestaurantService {
      * Deletes all restaurants.
      *
      */
+    @Transactional
     public void deleteAllRestaurants() {
         restaurantRepository.deleteAll();
         em.createNativeQuery("ALTER TABLE restaurant ALTER COLUMN id RESTART WITH 1").executeUpdate();

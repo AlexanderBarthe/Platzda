@@ -5,6 +5,7 @@ import eva.platzda.backend.core.models.User;
 import eva.platzda.backend.core.repositories.UserRepository;
 import eva.platzda.backend.error_handling.NotFoundException;
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -73,6 +74,7 @@ public class UserService {
      * Deletes all Users.
      *
      */
+    @Transactional
     public void deleteAll() {
         userRepository.deleteAll();
         em.createNativeQuery("ALTER TABLE appuser ALTER COLUMN id RESTART WITH 1").executeUpdate();

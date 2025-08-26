@@ -24,7 +24,20 @@ scripts:
     - await notification_reservation 1
     - resv delete-id 1
   mass-reservations-test:
-
+    - user --silent drop
+    - rest --silent drop
+    - table --silent drop
+    - resv --silent drop
+    - hours --silent drop
+    - user --silent create RestOwner
+    - rest --silent create 1
+    - table --silent create 1 2
+    - hours --silent create 1 3 10:00:00 22:00:00
+    - run --silent 1000 user --silent create [x+1]
+    - log --silent flush
+    - run --silent 1000 --mt resv create --no-notification 1 [x+1] 2025-10-01T10:00:00 1
+    - log --count success
+    - log --count client-error
   correctness-test:
     - user drop
     - rest drop

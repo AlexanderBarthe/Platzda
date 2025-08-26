@@ -37,14 +37,25 @@ public class LogCommand implements ConsoleCommand {
 
         String response;
 
+        String prefix = "";
+
         switch (arguments.peekFirst()) {
             case "all" -> response = RestClient.sendRequest("logs", HttpMethod.GET, null);
             case "avg-time" -> response = "Server internal average time: " + Float.valueOf(RestClient.sendRequest("logs/avg-time", HttpMethod.GET, null))/1000 + " ms";
             case "med-time" -> response = "Server internal median time: " + Float.valueOf(RestClient.sendRequest("logs/med-time", HttpMethod.GET, null))/1000 + " ms";
             case "max-time" -> response = "Server internal maximum time: " + Float.valueOf(RestClient.sendRequest("logs/max-time", HttpMethod.GET, null))/1000 + " ms";
-            case "success" -> response = RestClient.sendRequest("logs/success", HttpMethod.GET, null);
-            case "server-error" -> response = RestClient.sendRequest("logs/server-errors", HttpMethod.GET, null);
-            case "client-error" -> response = RestClient.sendRequest("logs/client-errors", HttpMethod.GET, null);
+            case "success" -> {
+                response = RestClient.sendRequest("logs/success", HttpMethod.GET, null);
+                prefix = "Successful ";
+            }
+            case "server-error" -> {
+                response = RestClient.sendRequest("logs/server-errors", HttpMethod.GET, null);
+                prefix = "Server Error ";
+            }
+            case "client-error" -> {
+                response = RestClient.sendRequest("logs/client-errors", HttpMethod.GET, null);
+                prefix = "Client Error ";
+            }
             case "stats" -> {
                 arguments.removeFirst();
                 if(arguments.isEmpty()) throw new IllegalArgumentException("Missing endpoint");
@@ -66,7 +77,7 @@ public class LogCommand implements ConsoleCommand {
 
         if (counting) {
             int elementCount = countTopLevel(response);
-            return "Log Entries: " + elementCount;
+            return prefix + "Log Entries: " + elementCount;
         }
 
         return response;
