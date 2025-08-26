@@ -61,20 +61,31 @@ public class ScriptCommand implements ConsoleCommand {
         for(String command : commands){
             if(command.startsWith("await")) {
 
-                String[] awaitArgs = command.split(" ");
+                Deque<String> awaitArgs = new ArrayDeque<>(List.of(command.split(" ")));
 
-                if(awaitArgs.length < 3){
+                awaitArgs.removeFirst();
+
+                boolean silent;
+                if(awaitArgs.peekFirst().equals("--silent")) {
+                    silent = true;
+                    awaitArgs.removeFirst();
+                } else {
+                    silent = false;
+                }
+
+                if(awaitArgs.size() < 2){
                     System.out.println("Not enough arguments in command: " + command);
                     continue;
                 }
 
-                SocketNotificationType awaitedType = SocketNotificationType.fromString(awaitArgs[1]);
+                SocketNotificationType awaitedType = SocketNotificationType.fromString(awaitArgs.peekFirst());
                 if(awaitedType == null){
-                    System.out.println("Invalid socket notification type: " + awaitArgs[1] + "in command: " + command);
+                    System.out.println("Invalid socket notification type: " + awaitArgs.peekFirst() + " in command: " + command);
                     continue;
                 }
+                awaitArgs.removeFirst();
 
-                if(awaitArgs[2].equals("any")) {
+                if(awaitArgs.peekFirst().equals("any")) {
                     CompletableFuture<String> future = new CompletableFuture<>();
 
                     //schedule a timeout that completes the future exceptionally after TIMEOUT_SECONDS
@@ -93,6 +104,8 @@ public class ScriptCommand implements ConsoleCommand {
                                 return;
                             }
 
+                            if(!silent) System.out.println("Received awaited message for type " + awaitedType.getTranslation() + ".");
+
                             future.complete(message);
                         }
                     };
@@ -101,7 +114,7 @@ public class ScriptCommand implements ConsoleCommand {
                 }
                 else {
 
-                    List<Long> awaitedIds = resolveAwaitedIds(awaitArgs[2]);
+                    List<Long> awaitedIds = resolveAwaitedIds(awaitArgs.peekFirst());
 
                     for (long awaitedId : awaitedIds) {
 
@@ -123,6 +136,8 @@ public class ScriptCommand implements ConsoleCommand {
                                 future.completeExceptionally(new IllegalStateException("Connection closed"));
                                 return;
                             }
+
+                            if(!silent) System.out.println("Received awaited message for type " + awaitedType.getTranslation() + " on id " +  awaitedId);
 
                             future.complete(line);
                         });

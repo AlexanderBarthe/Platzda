@@ -4,6 +4,7 @@ import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.models.User;
 import eva.platzda.backend.core.repositories.UserRepository;
 import eva.platzda.backend.error_handling.NotFoundException;
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +20,13 @@ public class UserService {
 
     private final RestaurantService restaurantService;
 
+    private final EntityManager em;
+
     @Autowired
-    public UserService(UserRepository userRepository,  RestaurantService restaurantService) {
+    public UserService(UserRepository userRepository,  RestaurantService restaurantService, EntityManager em) {
         this.userRepository = userRepository;
         this.restaurantService = restaurantService;
+        this.em = em;
     }
 
     /**
@@ -71,6 +75,7 @@ public class UserService {
      */
     public void deleteAll() {
         userRepository.deleteAll();
+        em.createNativeQuery("ALTER TABLE appuser ALTER COLUMN id RESTART WITH 1").executeUpdate();
     }
 
     /**

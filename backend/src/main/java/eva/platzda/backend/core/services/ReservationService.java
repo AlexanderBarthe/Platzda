@@ -6,6 +6,8 @@ import eva.platzda.backend.core.models.*;
 import eva.platzda.backend.core.notifications.NotificationSocket;
 import eva.platzda.backend.core.repositories.*;
 import eva.platzda.backend.error_handling.NotEnoughCapacityException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -35,6 +37,8 @@ public class ReservationService {
 
     private final NotificationSocket notificationSocket;
 
+    private final EntityManager em;
+
     /**
      *All Args Constructor
      */
@@ -45,7 +49,8 @@ public class ReservationService {
                               ReservationRepository reservationRepository,
                               HoursRepository hoursRepository,
                               RestaurantRepository restaurantRepository,
-                              NotificationSocket notificationSocket) {
+                              NotificationSocket notificationSocket,
+                              EntityManager em) {
         this.timeslotRepository = timeslotRepository;
         this.tableRepository = tableRepository;
         this.userRepository = userRepository;
@@ -53,6 +58,7 @@ public class ReservationService {
         this.hoursRepository = hoursRepository;
         this.restaurantRepository = restaurantRepository;
         this.notificationSocket = notificationSocket;
+        this.em = em;
     }
 
 
@@ -349,16 +355,18 @@ public class ReservationService {
     /**
      * Deletes all reservations in the system.
      */
-    public void deleteAllReservation(){
-        for (Timeslot t: timeslotRepository.findAll()){
+    @Transactional
+    public void deleteAllReservation() {
+        for (Timeslot t : timeslotRepository.findAll()) {
             t.setUser(null);
         }
-        for(Reservation r: reservationRepository.findAll()){
+        for (Reservation r : reservationRepository.findAll()) {
             String msg = "Reservation for table " + r.getRestaurantTable().getId() + " from " + r.getStartTime() + " to " + r.getEndTime() + " has been canceled.";
             notificationSocket.notifyChange(r, msg);
         }
 
         reservationRepository.deleteAll();
+        em.createNativeQuery("ALTER TABLE reservation ALTER COLUMN id RESTART WITH 1").executeUpdate();
     }
 
 }

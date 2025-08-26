@@ -24,7 +24,6 @@
         </encoder>
     </appender>
 
-    <!-- async wrapper -->
     <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
         <appender-ref ref="FILE"/>
         <queueSize>10001</queueSize>

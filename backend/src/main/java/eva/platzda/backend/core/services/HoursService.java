@@ -3,6 +3,8 @@ package eva.platzda.backend.core.services;
 
 import eva.platzda.backend.core.models.OpeningHours;
 import eva.platzda.backend.core.repositories.HoursRepository;
+import jakarta.persistence.EntityManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,13 +20,18 @@ public class HoursService {
 
     private final HoursRepository hoursRepository;
 
+    private final EntityManager em;
+
     /**
      * Constructs a new HoursService with the given repository.
      *
      * @param hoursRepository Repository for OpeningHours entities
+     * @param em EntityManager
      */
-    public HoursService(HoursRepository hoursRepository) {
+    @Autowired
+    public HoursService(HoursRepository hoursRepository, EntityManager em) {
         this.hoursRepository = hoursRepository;
+        this.em = em;
     }
 
     /**
@@ -104,5 +111,8 @@ public class HoursService {
      * Deletes all opening hours in the system.
      */
     @Transactional
-    public void deleteAllOpeningHours() {hoursRepository.deleteAll();}
+    public void deleteAllOpeningHours() {
+        hoursRepository.deleteAll();
+        em.createNativeQuery("ALTER TABLE opening_hours ALTER COLUMN id RESTART WITH 1").executeUpdate();
+    }
 }

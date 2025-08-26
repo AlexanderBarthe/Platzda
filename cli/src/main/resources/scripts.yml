@@ -14,6 +14,17 @@ scripts:
     - time --max
     - log max-time
     - time --silent --flush
+  notification-test:
+    - resv --silent drop
+    - resv --silent unsub all
+    - resv --silent create --no-notification 1 1 2025-10-01T14:00:00 1
+    - time script --silent notification-test-helper
+    - resv --silent drop
+  notification-test-helper:
+    - await notification_reservation 1
+    - resv delete-id 1
+  mass-reservations-test:
+
   correctness-test:
     - user drop
     - rest drop
@@ -21,9 +32,3 @@ scripts:
     - resv drop
     - hours drop
     - log flush
-  notification-test:
-    - resv create 1 1 2025-10-01T14:00:00 1
-    - time script --silent notification-test-helper
-  notification-test-helper:
-    - await notification_reservation any
-    - resv drop

@@ -2,6 +2,7 @@ package eva.platzda.backend.core.services;
 
 import eva.platzda.backend.core.models.RestaurantTable;
 import eva.platzda.backend.core.repositories.TableRepository;
+import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,14 +21,17 @@ public class TableService {
     private final TableRepository tableRepository;
     private final TimeslotGenerationService timeslotGenerationService;
 
+    private final EntityManager em;
     /**
      * All Args Constructor
      * @param tableRepository
      */
     public TableService(TableRepository tableRepository,
-                        TimeslotGenerationService timeslotGenerationService) {
+                        TimeslotGenerationService timeslotGenerationService,
+                        EntityManager em) {
         this.tableRepository = tableRepository;
         this.timeslotGenerationService = timeslotGenerationService;
+        this.em = em;
     }
 
     /**
@@ -103,5 +107,8 @@ public class TableService {
      * Deletes all tables in the system.
      */
     @Transactional
-    public void deleteAll() {tableRepository.deleteAll();}
+    public void deleteAll() {
+        tableRepository.deleteAll();
+        em.createNativeQuery("ALTER TABLE restaurant_table ALTER COLUMN id RESTART WITH 1").executeUpdate();
+    }
 }

@@ -13,7 +13,10 @@ public class ResvCommand extends CommandExecutor implements ConsoleCommand {
                 new ResvDeleteUserCommand(),
                 new ResvDropCommand(),
                 new ResvGetRestCommand(),
-                new ResvGetSlotsCommand());
+                new ResvGetSlotsCommand(),
+                new ResvGetSubsCommand(subscriptionService),
+                new ResvSubscribeCommand(subscriptionService),
+                new ResvUnsubscribeCommand(subscriptionService));
     }
 
     @Override

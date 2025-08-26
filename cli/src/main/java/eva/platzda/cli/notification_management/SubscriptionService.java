@@ -82,7 +82,7 @@ public class SubscriptionService implements SocketNotificationReceiver {
 
         try {
             //Action, Type
-            return sendAndAwait("unsubscribe;" + type);
+            return sendAndAwait("unsubscribe;" + type.getTranslation());
         } catch (TimeoutException te) {
             return "Timeout.";
         } catch (Exception e) {

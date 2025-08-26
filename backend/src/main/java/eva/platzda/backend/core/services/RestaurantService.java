@@ -2,6 +2,7 @@ package eva.platzda.backend.core.services;
 
 import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.repositories.RestaurantRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +18,11 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
 
-    public RestaurantService(RestaurantRepository restaurantRepository) {
+    private final EntityManager em;
+
+    public RestaurantService(RestaurantRepository restaurantRepository, EntityManager em) {
         this.restaurantRepository = restaurantRepository;
+        this.em = em;
     }
 
     /**
@@ -91,6 +95,7 @@ public class RestaurantService {
      */
     public void deleteAllRestaurants() {
         restaurantRepository.deleteAll();
+        em.createNativeQuery("ALTER TABLE restaurant ALTER COLUMN id RESTART WITH 1").executeUpdate();
     }
 
 }
