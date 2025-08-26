@@ -17,6 +17,12 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Service for managing reservations.
+ *
+ * Handles creation, deletion, and retrieval of reservations,
+ * as well as finding free timeslots and checking user constraints.
+ */
 @Service
 public class ReservationService {
 
@@ -29,6 +35,9 @@ public class ReservationService {
 
     private final NotificationSocket notificationSocket;
 
+    /**
+     *All Args Constructor
+     */
     @Autowired
     public ReservationService(TimeslotRepository timeslotRepository,
                               TableRepository tableRepository,
@@ -46,6 +55,13 @@ public class ReservationService {
         this.notificationSocket = notificationSocket;
     }
 
+
+    /**
+     * Checks whether a list of timeslots is continuous in time.
+     *
+     * @param window List of timeslots
+     * @return true if all timeslots are continuous, false otherwise
+     */
     private boolean isContinuous(List<Timeslot> window) {
         for(int i = 1; i < window.size(); i++) {
             if (!window.get(i).getStartTime().equals(window.get(i - 1).getEndTime())) {
@@ -55,6 +71,14 @@ public class ReservationService {
         return true;
     }
 
+    /**
+     * Finds free time windows for a given table asynchronously.
+     *
+     * @param table Table to check
+     * @param dayStart Start time of the day
+     * @param dayEnd End time of the day
+     * @return CompletableFuture containing a list of available time windows
+     */
     @Async("reservationExecutor")
     public CompletableFuture<List<TimeWindow>> findFreeWindowsForTable(RestaurantTable table,
                                                                        LocalDateTime dayStart,
@@ -88,6 +112,16 @@ public class ReservationService {
 
     }
 
+    /**
+     * Finds all free timeslots for a restaurant on a given day that can accommodate a specified number of guests.
+     *
+     * @param restaurantId ID of the restaurant
+     * @param day Date of interest
+     * @param open Opening time
+     * @param close Closing time
+     * @param guests Number of guests
+     * @return List of available time windows
+     */
     public List<TimeWindow> findFreeSlots(Long restaurantId,
                                           LocalDate day,
                                           LocalTime open,
@@ -122,6 +156,18 @@ public class ReservationService {
                 .toList();
     }
 
+    /**
+     * Books a reservation for a user at a restaurant starting at a given time.
+     *
+     * The method attempts to allocate tables starting with the smallest suitable tables first.
+     *
+     * @param restaurantId ID of the restaurant
+     * @param userId ID of the user making the reservation
+     * @param start Start time of the reservation
+     * @param guests Number of guests
+     * @return List of created Reservation entities
+     * @throws NotEnoughCapacityException if there is insufficient capacity to accommodate all guests
+     */
     @Transactional
     public List<Reservation> bookSlot(Long restaurantId,
                                     Long userId,
@@ -209,16 +255,36 @@ public class ReservationService {
         return reservationRepository.saveAll(reservations);
     }
 
+    /**
+     * Returns all reservations for a given user.
+     *
+     * @param user User entity
+     * @return List of reservations
+     */
     public List<Reservation> getReservationUser(User user) {
         return reservationRepository.findReservationForUser(user);
     }
 
+    /**
+     * Checks whether a user already has a reservation on a given day.
+     *
+     * @param userId ID of the user
+     * @param day Date to check
+     * @return true if a reservation exists, false otherwise
+     */
     public boolean checkSingleReservationDay(Long userId, LocalDate day) {
         LocalDateTime dayStart = day.atStartOfDay();
         LocalDateTime dayEnd = day.atTime(23,59,59);
         return reservationRepository.existsReservationForUserOnDay(userId, dayStart, dayEnd);
     }
 
+    /**
+     * Finds all reservations for a restaurant on a specific date.
+     *
+     * @param restaurant Restaurant entity
+     * @param date Date of interest
+     * @return List of reservations
+     */
     public List<Reservation> findReservationsForRestaurant(Restaurant restaurant, LocalDate date) {
         LocalDateTime dayStart = date.atTime(
                 hoursRepository.findByWeekday(date.getDayOfWeek().getValue(), restaurant.getId()).getFirst().getOpeningTime());
@@ -229,6 +295,11 @@ public class ReservationService {
         return reservationRepository.findReservationsForRestaurant(restaurant.getId(), dayStart, dayEnd);
     }
 
+    /**
+     * Deletes a specific reservation.
+     *
+     * @param reservation Reservation entity to delete
+     */
     public void deleteReservation(Reservation reservation) {
         List<Timeslot> timeslots = timeslotRepository.findTimeslotsForReservation(reservation.getStartTime(), reservation.getEndTime(), reservation.getUser());
         for (Timeslot t: timeslots) {
@@ -241,6 +312,13 @@ public class ReservationService {
         reservationRepository.delete(reservation);
     }
 
+
+    /**
+     * Deletes all reservations for a specific user on a given day.
+     *
+     * @param userId ID of the user
+     * @param date Date for which reservations should be deleted
+     */
     public void deleteReservationUserDay(Long userId, LocalDate date) {
         List<Reservation> reservationsUser = reservationRepository.findReservationForUser(userRepository.getReferenceById(userId));
         for(Reservation r: reservationsUser) {
@@ -250,10 +328,21 @@ public class ReservationService {
         }
     }
 
+
+    /**
+     * Finds a reservation by its ID.
+     *
+     * @param reservationId ID of the reservation
+     * @return Reservation entity
+     */
     public Reservation findById(Long reservationId) {
         return reservationRepository.findById(reservationId).get();
     }
 
+
+    /**
+     * Deletes all reservations in the system.
+     */
     public void deleteAllReservation(){
         for (Timeslot t: timeslotRepository.findAll()){
             t.setUser(null);

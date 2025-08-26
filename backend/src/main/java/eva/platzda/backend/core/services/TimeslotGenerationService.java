@@ -17,6 +17,12 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Service for generating and publishing timeslots for restaurants.
+ *
+ * Creates timeslots for tables based on restaurant opening hours,
+ * and deletes outdated timeslots. Supports scheduled and manual generation.
+ */
 @Service
 public class TimeslotGenerationService {
 
@@ -26,6 +32,14 @@ public class TimeslotGenerationService {
     private final HoursService hoursService;
     private final TimeslotRepository timeslotRepository;
 
+    /**
+     * All Args Constructor
+     * @param timeslotService
+     * @param tableService
+     * @param restaurantService
+     * @param hoursService
+     * @param timeslotRepository
+     */
     @Autowired
     public TimeslotGenerationService(TimeslotService timeslotService, TableService tableService, RestaurantService restaurantService, HoursService hoursService, TimeslotRepository timeslotRepository) {
         this.tableService = tableService;
@@ -35,11 +49,25 @@ public class TimeslotGenerationService {
         this.timeslotRepository = timeslotRepository;
     }
 
+    /**
+     * Scheduled task to publish timeslots automatically.
+     *
+     * Runs daily at 1:00 AM and generates timeslots for restaurants
+     * two weeks in advance.
+     */
     @Scheduled(cron = "0 0 1 * * *")
     public void publishTimeslotsScheduled() {
         publishTimeslots(LocalDate.now().plusWeeks(2));
     }
 
+    /**
+     * Publishes timeslots for all restaurants on a specified target date.
+     *
+     * Creates timeslots for all tables in each restaurant based on
+     * their opening hours, and removes outdated timeslots.
+     *
+     * @param targetDate Date for which to generate timeslots
+     */
     public void publishTimeslots(LocalDate targetDate) {
 
         List<Restaurant> allRestaurants = restaurantService.findAllRestaurants();
@@ -57,6 +85,15 @@ public class TimeslotGenerationService {
 
     }
 
+    /**
+     * Creates timeslots for a single restaurant on a given date.
+     *
+     * Generates 15-minute interval timeslots between opening and closing times.
+     *
+     * @param r Restaurant for which timeslots should be created
+     * @param date Date for the timeslots
+     * @return List of generated Timeslot objects (without table assignments)
+     */
     public List<Timeslot> createTimeslots(Restaurant r, LocalDate date) {
         List<Timeslot> slots = new ArrayList<>();
 
