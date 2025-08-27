@@ -1,6 +1,5 @@
 package eva.platzda.cli.notification_management;
 
-import eva.platzda.cli.notification_management.receivers.NotificationReceiver;
 import io.github.cdimascio.dotenv.Dotenv;
 
 import java.io.*;
@@ -8,9 +7,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -63,7 +60,7 @@ public class SocketManager {
     }
 
     /**
-     * Open a connection
+     * Open a connection if not already connected and auto-reconnect is allowed.
      */
     public synchronized void connect() {
         if (isConnected()) return;
@@ -83,7 +80,8 @@ public class SocketManager {
     }
 
     /**
-     * Attempt to open a connection
+     * Try to establish a TCP connection to the server URL, start reader thread
+     * and trigger resubscription. Returns true on success.
      */
     private boolean tryConnect() {
         URI uri;
@@ -121,6 +119,10 @@ public class SocketManager {
         }
     }
 
+    /**
+     * Start a daemon thread that reads incoming lines and forwards them to hooks.
+     * On error or stream end it will close the connection and schedule reconnects.
+     */
     private void startReaderThread() {
         //Stop old thread if existing
         if (readerThread != null && readerThread.isAlive()) {
@@ -160,13 +162,13 @@ public class SocketManager {
     }
 
     /**
-     * Schedule a reconnect attempt using exponential backoff (if not already scheduled).
+     * Schedule a reconnect using exponential backoff if no reconnect is already scheduled.
      */
     private void scheduleReconnectIfNeeded() {
         if (reconnectScheduled.compareAndSet(false, true)) {
             reconnectFuture = reconnectExecutor.schedule(() -> {
                 try {
-                    reconnectScheduled.set(false); // wir führen einmalig aus
+                    reconnectScheduled.set(false);
                     if (stopReconnect.get()) {
                         return;
                     }
@@ -191,6 +193,10 @@ public class SocketManager {
         }
     }
 
+
+    /**
+     * Cancel a pending reconnect attempt if present.
+     */
     private void cancelScheduledReconnect() {
         try {
             if (reconnectFuture != null && !reconnectFuture.isDone()) {
@@ -200,6 +206,11 @@ public class SocketManager {
         reconnectScheduled.set(false);
     }
 
+    /**
+     * Send a raw message to the server if connected.
+     *
+     * @param message the full message line to send
+     */
     public void sendMessage(String message) {
         if (isConnected() && writer != null) {
             writer.println(message);
@@ -210,7 +221,7 @@ public class SocketManager {
     }
 
     /**
-     * Disconnect from server
+     * Disconnect from server. Prevents reconnect.
      */
     public synchronized void disconnect() {
         //Prevent reconnect attempts
@@ -223,6 +234,9 @@ public class SocketManager {
         closeSilently();
     }
 
+    /**
+     * Close streams, socket and reader thread quietly
+     */
     private synchronized void closeSilently() {
         try { if (writer != null) writer.close(); } catch (Exception ignored) {}
         try { if (reader != null) reader.close(); } catch (Exception ignored) {}
@@ -244,8 +258,10 @@ public class SocketManager {
         return socket != null && socket.isConnected() && !socket.isClosed();
     }
 
+
     /**
-     * Cleanup on ending
+     * Stop reconnection activity, shut down the executor and disconnect.
+     * Intended for full application shutdown.
      */
     public void shutdown() {
         stopReconnect.set(true);
@@ -254,10 +270,22 @@ public class SocketManager {
         disconnect();
     }
 
+
+    /**
+     * Register a notification receiver to receive incoming messages.
+     *
+     * @param notificationHook hook that will receive messages
+     */
     public void addNotificationHook(SocketNotificationReceiver notificationHook) {
         notificationHooks.add(notificationHook);
     }
 
+
+    /**
+     * Remove a previously registered notification receiver.
+     *
+     * @param notificationHook hook to remove
+     */
     public void removeNotificationHook(SocketNotificationReceiver notificationHook) {
         notificationHooks.remove(notificationHook);
     }

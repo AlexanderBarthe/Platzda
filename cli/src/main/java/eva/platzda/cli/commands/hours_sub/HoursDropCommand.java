@@ -1,6 +1,5 @@
 package eva.platzda.cli.commands.hours_sub;
 
-import eva.platzda.cli.commands.RestCommand;
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.rest_api.HttpMethod;
 import eva.platzda.cli.rest_api.RestClient;

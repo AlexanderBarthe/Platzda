@@ -14,6 +14,15 @@ public abstract class RestClient {
 
     private static final String BASE_URL = Dotenv.load().get("backend_restapi_address");
 
+    /**
+     *
+     * Sends a rest api address to the server.
+     *
+     * @param url Url (no leading '/'
+     * @param method Http method
+     * @param body message body (Will be ignored for get requests)
+     * @return Answer or error string
+     */
     public static String sendRequest(String url, HttpMethod method, String body) {
 
         HttpRequest.Builder builder = HttpRequest.newBuilder()

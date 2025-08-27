@@ -2,9 +2,7 @@ package eva.platzda.backend.core.services;
 
 
 import eva.platzda.backend.core.models.OpeningHours;
-import eva.platzda.backend.core.models.Reservation;
 import eva.platzda.backend.core.models.Restaurant;
-import eva.platzda.backend.core.models.RestaurantTable;
 import eva.platzda.backend.core.repositories.HoursRepository;
 import eva.platzda.backend.core.repositories.RestaurantRepository;
 import eva.platzda.backend.core.repositories.TimeslotRepository;
@@ -14,8 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Time;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

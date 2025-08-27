@@ -1,12 +1,24 @@
 package eva.platzda.backend.error_handling;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ *
+ * Catches specific Exceptions for special handling.
+ *
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -56,6 +68,24 @@ public class GlobalExceptionHandler {
         }
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Malformed JSON request.");
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String,Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex, ServletWebRequest webRequest) {
+        String param = ex.getName();
+        Object value = ex.getValue();
+        String requiredType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown";
+        String message = String.format("Parameter '%s' with value '%s' could not be converted to type %s.", param, value, requiredType);
+
+        Map<String,Object> body = new LinkedHashMap<>();
+        body.put("timestamp", Instant.now().toString());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Bad Request");
+        body.put("message", message);
+        HttpServletRequest request = webRequest.getRequest();
+        body.put("path", request != null ? request.getRequestURI() : "");
+
+        return ResponseEntity.badRequest().body(body);
     }
 
     @ExceptionHandler

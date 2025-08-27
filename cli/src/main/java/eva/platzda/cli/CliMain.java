@@ -3,7 +3,6 @@ package eva.platzda.cli;
 import eva.platzda.cli.commands.execution.ConsoleManager;
 import eva.platzda.cli.commands.scripts.ScriptLoader;
 import eva.platzda.cli.notification_management.SubscriptionService;
-import io.github.cdimascio.dotenv.Dotenv;
 
 public class CliMain {
     public static void main(String[] args) {

@@ -8,7 +8,6 @@ import eva.platzda.backend.core.services.RestaurantService;
 import eva.platzda.backend.core.services.TableService;
 import eva.platzda.backend.error_handling.BadRequestBodyException;
 import eva.platzda.backend.error_handling.NotFoundException;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

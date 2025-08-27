@@ -8,7 +8,6 @@ import eva.platzda.backend.core.repositories.*;
 import eva.platzda.backend.error_handling.NotEnoughCapacityException;
 import eva.platzda.backend.error_handling.NotFoundException;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;

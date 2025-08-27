@@ -16,13 +16,14 @@ public class RunCommand implements ConsoleCommand {
     private final SubscriptionService subscriptionService;
     private final ScriptLoader scriptLoader;
 
-    private static final int THREAD_COUNT = 12;
+    private static int threadCount;
     private static final Pattern BRACKET_EXPR = Pattern.compile("\\[([^\\]]+)]");
     private static final ConcurrentMap<String, List<String>> RPN_CACHE = new ConcurrentHashMap<>();
 
     public RunCommand(SubscriptionService subscriptionService, ScriptLoader scriptLoader) {
         this.subscriptionService = subscriptionService;
         this.scriptLoader = scriptLoader;
+        threadCount = Runtime.getRuntime().availableProcessors() - 2;
     }
 
 
@@ -76,7 +77,7 @@ public class RunCommand implements ConsoleCommand {
         if(arguments.isEmpty()) return "Please enter a command.";
 
         if(multithreaded) {
-            formatAndRunParallel(executionCount, rateLimit, arguments.toArray(new String[0]), THREAD_COUNT, false);
+            formatAndRunParallel(executionCount, rateLimit, arguments.toArray(new String[0]), threadCount, false);
         }
         else {
             formatAndRun(executionCount, rateLimit, arguments.toArray(new String[0]));
@@ -86,6 +87,14 @@ public class RunCommand implements ConsoleCommand {
 
     }
 
+    /**
+     *
+     * Sequential runner
+     *
+     * @param executionCount
+     * @param rateLimit
+     * @param args
+     */
     public void formatAndRun(int executionCount, Integer rateLimit, String[] args) {
         ConsoleManager consoleManager = new ConsoleManager(subscriptionService, scriptLoader);
 
@@ -110,6 +119,14 @@ public class RunCommand implements ConsoleCommand {
         }
     }
 
+    /**
+     *
+     * Evaluates bracket expressions for changing numbers per iteration
+     *
+     * @param arg
+     * @param xValue
+     * @return
+     */
     private static String replaceBracketExpressions(String arg, long xValue) {
         Matcher m = BRACKET_EXPR.matcher(arg);
         StringBuffer sb = new StringBuffer();
@@ -123,7 +140,8 @@ public class RunCommand implements ConsoleCommand {
     }
 
     /**
-     * Parallel version with explicit control and optional rate-limiter.
+     *
+     * Parallel runner
      *
      * @param executionCount number of iterations (i from 0..executionCount-1)
      * @param rateLimit if non-null, global limit of runCommand() calls per second

@@ -224,9 +224,9 @@ public class TimeslotGenerationService {
     }
 
     /**
-     * Generiert für ein konkretes OpeningHours-Intervall (an einem Datum) alle Startzeiten
-     * im 15-Minuten-Raster. Schließzeit ist exklusiv: ein Slot darf nur starten, wenn
-     * start + 15min <= closingTime.
+     *
+     * Generates Opening-Hours-Interval for a date in quarter-hour slots
+     *
      */
     private List<LocalDateTime> generateStartsForOpening(LocalDate date, OpeningHours oh) {
         List<LocalDateTime> result = new ArrayList<>();

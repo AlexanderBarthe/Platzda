@@ -8,9 +8,12 @@ import eva.platzda.cli.notification_management.SubscriptionService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ *
+ * Tracks execution time of other commands and stores them.
+ *
+ */
 public class TimeCommand implements ConsoleCommand {
 
     private final SubscriptionService subscriptionService;
@@ -76,6 +79,12 @@ public class TimeCommand implements ConsoleCommand {
         return responseTimes_us;
     }
 
+    /**
+     *
+     * Returns average client side tracked response time
+     *
+     * @return
+     */
     public long getAverageResponseTime() {
         if(responseTimes_us.isEmpty()) return 0;
 
@@ -88,11 +97,23 @@ public class TimeCommand implements ConsoleCommand {
         return sum / amount;
     }
 
+    /**
+     *
+     * Returns median client side tracked response time
+     *
+     * @return
+     */
     public long getMedianResponseTime() {
         if(responseTimes_us.isEmpty()) return 0;
         return responseTimes_us.stream().sorted().toList().get(responseTimes_us.size()/2);
     }
 
+    /**
+     *
+     * Returns highest client side tracked response time
+     *
+     * @return
+     */
     public long getHighestResponseTime() {
         if(responseTimes_us.isEmpty()) return 0;
         return responseTimes_us.stream().max(Long::compareTo).get();

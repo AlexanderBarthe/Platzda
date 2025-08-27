@@ -2,9 +2,7 @@ package eva.platzda.cli.commands.rest_sub;
 
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.notification_management.SubscriptionService;
-import eva.platzda.cli.notification_management.receivers.ReservationSubscriber;
 import eva.platzda.cli.notification_management.receivers.RestaurantSubscriber;
-import eva.platzda.cli.notification_management.receivers.SocketNotificationType;
 
 public class RestSubscribeCommand implements ConsoleCommand {
 

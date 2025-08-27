@@ -1,5 +1,10 @@
 package eva.platzda.backend.core.notifications;
 
+/**
+ *
+ * Datapoint to keep track, which client waits for notification on what objects
+ *
+ */
 public class NotificationEntry {
 
     private NotificationType type;

@@ -1,8 +1,6 @@
 package eva.platzda.backend.core.notifications;
 
 import eva.platzda.backend.core.models.Reservation;
-import eva.platzda.backend.core.models.Restaurant;
-import eva.platzda.backend.core.services.ReservationService;
 import eva.platzda.backend.core.services.RestaurantService;
 import eva.platzda.backend.logging.LogService;
 import eva.platzda.backend.logging.LoggedEvent;
@@ -13,7 +11,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -26,6 +24,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+/**
+ *
+ * Handles socket connections and notifications
+ *
+ */
 @Component
 public class NotificationSocket implements InitializingBean, DisposableBean {
 
@@ -59,6 +62,11 @@ public class NotificationSocket implements InitializingBean, DisposableBean {
         stopServer();
     }
 
+    /**
+     *
+     * Starts socket
+     *
+     */
     private void startServer() {
         acceptorExecutor = Executors.newSingleThreadExecutor(r -> {
             Thread t = new Thread(r, "TableUpdate-Acceptor");
@@ -93,6 +101,12 @@ public class NotificationSocket implements InitializingBean, DisposableBean {
         });
     }
 
+    /**
+     *
+     * Shuts socket down
+     * Removes connections
+     *
+     */
     private void stopServer() {
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
@@ -114,6 +128,12 @@ public class NotificationSocket implements InitializingBean, DisposableBean {
         logger.info("TCP notification server stopped.");
     }
 
+    /**
+     *
+     * Handles a single client lifecycle: reads lines, delegates processing and ensures cleanup when the connection closes.
+     *
+     * @param conn client connection to handle
+     */
     private void handleClient(ClientConnection conn) {
         try {
             afterConnectionEstablished(conn);
@@ -135,10 +155,25 @@ public class NotificationSocket implements InitializingBean, DisposableBean {
         }
     }
 
+    /**
+     *
+     * Called after a new connection is established; logs connection information.
+     *
+     * @param conn new client connection
+     */
     private void afterConnectionEstablished(ClientConnection conn) {
         logger.info("Socket connection established: {}", conn.getRemoteAddress());
     }
 
+    /**
+     *
+     * Parse and handle a text message from a client. Supports operations like get, subscribe and unsubscribe,
+     * sends appropriate replies and logs the request.
+     *
+     * @param conn client connection that sent the message
+     * @param payload raw message payload
+     * @throws Exception if message handling fails
+     */
     private void handleTextMessage(ClientConnection conn, String payload) throws Exception {
 
         long start = System.nanoTime();
@@ -273,12 +308,26 @@ public class NotificationSocket implements InitializingBean, DisposableBean {
 
     }
 
+    /**
+     *
+     * Unsubscribe the given connection from all notifications of the provided type.
+     *
+     * @param notificationType type of notifications to remove
+     * @param conn client connection to update
+     */
     private void unsubscribeAll(NotificationType notificationType, ClientConnection conn) {
         List<NotificationEntry> toUnsub = notificationListeners.stream().filter(nl -> nl.getType() == notificationType && nl.getConnection() == conn).collect(Collectors.toList());
         toUnsub.forEach(nl -> notificationListeners.remove(nl));
     }
 
-
+    /**
+     *
+     * Record and persist a client request log entry including duration and success status.
+     *
+     * @param startTime startTime the start time in nanoseconds (from System.nanoTime())
+     * @param msg short description of the request
+     * @param success true if the request succeeded, false otherwise
+     */
     private void logClientRequest(Long startTime, String msg, boolean success) {
 
         long duration = (System.nanoTime() - startTime)/1000;
@@ -295,12 +344,25 @@ public class NotificationSocket implements InitializingBean, DisposableBean {
 
     }
 
+    /**
+     *
+     * Called when a connection is closed; removes any subscriptions for that connection and logs the closure.
+     *
+     * @param conn closed connection
+     */
     private void afterConnectionClosed(ClientConnection conn) {
         logger.info("Socket connection closed: {}", conn.getRemoteAddress());
         List<NotificationEntry> toRemove = notificationListeners.stream().filter(nl -> nl.getConnection().equals(conn)).collect(Collectors.toList());
         toRemove.forEach(notificationListeners::remove);
     }
 
+    /**
+     *
+     * Notify subscribed clients about changes to a reservation or its restaurant by sending update messages.
+     *
+     * @param reservation changed reservation
+     * @param updateMessage message to send to subscribers
+     */
     public void notifyChange(Reservation reservation, String updateMessage) {
 
         if(reservation == null) return;
@@ -330,14 +392,41 @@ public class NotificationSocket implements InitializingBean, DisposableBean {
 
     }
 
+    /**
+     *
+     * Sends error to the client
+     *
+     * @param id original request id to reply to
+     * @param session client connection to send the reply on
+     * @param msg error message
+     * @throws IOException
+     */
     private void replyError(Long id, ClientConnection session, String msg) throws IOException {
         session.send("answer;" + id + ";" + "Error: " + msg);
     }
 
+    /**
+     *
+     * Sends success response to the client
+     *
+     * @param id original request id to reply to
+     * @param session client connection to send the reply on
+     * @param msg success message
+     * @throws IOException
+     */
     private void replySuccess(Long id, ClientConnection session, String msg) throws IOException {
         session.send("answer;" + id + ";" + "Success: " + msg);
     }
 
+    /**
+     *
+     * Sends a plain answer to the client
+     *
+     * @param id original request id to reply to
+     * @param session client connection to send the reply on
+     * @param msg message
+     * @throws IOException
+     */
     private void replyPlainMessage(Long id, ClientConnection session, String msg) throws IOException {
         session.send("answer;" + id + ";" + msg);
     }

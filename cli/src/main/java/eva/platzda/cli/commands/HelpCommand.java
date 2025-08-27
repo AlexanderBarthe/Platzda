@@ -30,7 +30,7 @@ public class HelpCommand implements ConsoleCommand {
             manualDescriptions.put("listscripts", "Gives a list of the available scripts to run");
             manualDescriptions.put("script <name>", "Runs given script");
             manualDescriptions.put("log <option> <type>", "Receive or manage server saved log data");
-            return "## List of commands ##\n\n" + formatManuals(manualDescriptions);
+            return "## List of commands ##\n\n" + formatManuals(manualDescriptions) + "\n\nUse --silent after command keyword to hide the output";
         }
 
         switch(args[0]) {
@@ -65,12 +65,15 @@ public class HelpCommand implements ConsoleCommand {
             }
             case "resv" -> {
                 Map<String, String> manualDescriptions = new LinkedHashMap<>();
-                manualDescriptions.put("create <restaurant_id> <user_id> <LocalDateTime: start> <guest_count>", "Creates a reservation.");
+                manualDescriptions.put("create <option> <restaurant_id> <user_id> <LocalDateTime: start> <guest_count>", "Creates a reservation. Use --no-notification option to prevent a subscription to that reservation");
                 manualDescriptions.put("delete-id <reservation_id>", "Deletes the reservation with given id.");
                 manualDescriptions.put("delete-user <user_id> <date>", "Deletes all reservations of a user on one day.");
                 manualDescriptions.put("get <restaurant_id> <date>", "Shows all reservations for a day in a restaurant.");
                 manualDescriptions.put("drop", "Deletes all reservation.");
                 manualDescriptions.put("get-slots <restaurant_id> <date> <guest_count>", "Shows all available timeslots for a restaurant.");
+                manualDescriptions.put("sub <reservation_id>", "Subscribes to updates of a reservation");
+                manualDescriptions.put("unsub <reservation_id>", "Unsubscribes from updates of a reservation");
+                manualDescriptions.put("get-subs", "Get list of subscribed reservations");
                 return "## List of subcommands for 'resv' ##\n\n" + formatManuals(manualDescriptions);
             }
             case "hours" -> {

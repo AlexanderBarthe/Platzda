@@ -12,6 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ *
+ * Service for logs and stats
+ *
+ */
 @Service
 public class LogService {
 
@@ -24,14 +29,33 @@ public class LogService {
         this.loggedEventRepository = loggedEventRepository;
     }
 
+    /**
+     *
+     * Returns logged event of id
+     *
+     * @param eventId
+     * @return
+     */
     public LoggedEvent getLoggedEvent(Long eventId) {
         return loggedEventRepository.getLoggedEventById(eventId);
     }
 
+    /**
+     *
+     * Returns all saved logged events
+     *
+     * @return
+     */
     public List<LoggedEvent> findAll() {
         return loggedEventRepository.findAll();
     }
 
+    /**
+     *
+     * Returns avg response time in µs
+     *
+     * @return
+     */
     public Long getAvgResponseTime() {
         if(loggedEventRepository.count() == 0) return 0L;
         long adder = 0;
@@ -43,16 +67,35 @@ public class LogService {
         return value / adder;
     }
 
+    /**
+     *
+     * Returns median response time in µs
+     *
+     * @return
+     */
     public Long getMedianResponseTime() {
         if(loggedEventRepository.count() == 0) return 0L;
         return findAll().stream().map(LoggedEvent::getResponseTime_us).sorted().toList().get(findAll().size()/2);
     }
 
+    /**
+     *
+     * Returns highest response time in µs
+     *
+     * @return
+     */
     public Long getMaxResponseTime() {
         if(loggedEventRepository.count() == 0) return 0L;
         return findAll().stream().map(LoggedEvent::getResponseTime_us).max(Long::compareTo).get();
     }
 
+    /**
+     *
+     * Returns endpoint ussage data
+     *
+     * @param endpoint
+     * @return
+     */
     public String getEndpointUssage(String endpoint) {
         List<LoggedEvent> eventsOnEndpoint = findAll().stream().filter(log -> log.getEndpoint().equals(endpoint)).toList();
 
@@ -79,7 +122,12 @@ public class LogService {
 
     }
 
-
+    /**
+     *
+     * Adds a log to db async
+     *
+     * @param loggedEvent
+     */
     @Async("loggingExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void addLoggedEvent(LoggedEvent loggedEvent) {
@@ -91,16 +139,33 @@ public class LogService {
         }
     }
 
+    /**
+     *
+     * Edits an event log
+     *
+     * @param loggedEvent
+     */
     @Transactional
     public void editLoggedEvent(LoggedEvent loggedEvent) {
         loggedEventRepository.save(loggedEvent);
     }
 
+    /**
+     *
+     * Deletes an event log
+     *
+     * @param loggedEvent
+     */
     @Transactional
     public void deleteLoggedEvent(LoggedEvent loggedEvent) {
         loggedEventRepository.delete(loggedEvent);
     }
 
+    /**
+     *
+     * Deletes entire log database table
+     *
+     */
     @Transactional
     public void deleteAllLoggedEvents() {
         loggedEventRepository.deleteAll();

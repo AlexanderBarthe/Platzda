@@ -4,6 +4,9 @@ import eva.platzda.backend.core.models.Timeslot;
 
 import java.time.LocalDateTime;
 
+/**
+ * Dto for timelots
+ */
 public class TimeslotDto {
 
     private Long id;

@@ -9,7 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-
+/**
+ *
+ * Intercepts rest requests and logs metadata.
+ * Outputs are console, file and db table.
+ * Config for console and file output are in /resources/logback-spring.xml
+ *
+ */
 @Component
 public class LoggingInterceptor implements HandlerInterceptor {
 

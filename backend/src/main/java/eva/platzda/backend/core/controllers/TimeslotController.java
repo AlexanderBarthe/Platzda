@@ -29,6 +29,12 @@ public class TimeslotController {
         this.timeslotService = ti;
     }
 
+    /**
+     *
+     * Lists all Timeslots
+     *
+     * @return List of timeslots as DTO
+     */
     @GetMapping
     public ResponseEntity<List<TimeslotDto>> getAllTimeslots() {
         List<Timeslot> timeslots = timeslotService.findAllTimeslots();

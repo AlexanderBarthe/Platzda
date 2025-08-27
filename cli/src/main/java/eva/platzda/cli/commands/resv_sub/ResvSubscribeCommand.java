@@ -3,7 +3,6 @@ package eva.platzda.cli.commands.resv_sub;
 import eva.platzda.cli.commands.execution.ConsoleCommand;
 import eva.platzda.cli.notification_management.SubscriptionService;
 import eva.platzda.cli.notification_management.receivers.ReservationSubscriber;
-import eva.platzda.cli.notification_management.receivers.RestaurantSubscriber;
 
 public class ResvSubscribeCommand implements ConsoleCommand {
 

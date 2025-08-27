@@ -1,7 +1,13 @@
 package eva.platzda.backend.core;
 
-import eva.platzda.backend.core.models.*;
-import eva.platzda.backend.core.repositories.*;
+import eva.platzda.backend.core.models.OpeningHours;
+import eva.platzda.backend.core.models.Restaurant;
+import eva.platzda.backend.core.models.RestaurantTable;
+import eva.platzda.backend.core.models.User;
+import eva.platzda.backend.core.repositories.HoursRepository;
+import eva.platzda.backend.core.repositories.RestaurantRepository;
+import eva.platzda.backend.core.repositories.TableRepository;
+import eva.platzda.backend.core.repositories.UserRepository;
 import eva.platzda.backend.core.services.TimeslotGenerationService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -9,6 +15,11 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+/**
+ *
+ * Used to pre-define data.
+ *
+ */
 @Component
 public class DataLoader implements CommandLineRunner {
 

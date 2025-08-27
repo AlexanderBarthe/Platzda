@@ -3,7 +3,6 @@ package eva.platzda.backend.core.services;
 import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.repositories.RestaurantRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 

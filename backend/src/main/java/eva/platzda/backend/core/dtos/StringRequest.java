@@ -1,7 +1,7 @@
 package eva.platzda.backend.core.dtos;
 
 /**
- * Simple dto for tag creation and deletion
+ * Simple dto for tag creation and deletion with special strings (containing '/' and similar)
  */
 public class StringRequest {
 
