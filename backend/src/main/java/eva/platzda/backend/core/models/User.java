@@ -4,7 +4,9 @@ package eva.platzda.backend.core.models;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "appuser")
@@ -19,6 +21,9 @@ public class User {
 
     @Column
     private String email;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserFlag> flags = new ArrayList<>();
 
     public User() {
 
@@ -59,27 +64,27 @@ public class User {
         this.email = email;
     }
 
-    @ManyToMany
-    @JoinTable(
-            name = "user_flag",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "restaurant_id")
-    )
-    private List<Restaurant> flags = new ArrayList<>();
+    public void addFlag(Restaurant r){
+        UserFlag uf = new UserFlag(this, r);
+        flags.add(uf);
+    }
+    public void removeFlag(Restaurant r){
+        flags.removeIf(uf -> uf.getRestaurant().getId().equals(r.getId()));
+    }
 
     public List<Restaurant> getFlags() {
-        return flags;
+        List<Restaurant> set = new ArrayList<>();
+        for(UserFlag uf : flags){
+            set.add(uf.getRestaurant());
+        }
+        return set;
     }
 
     public void setFlags(List<Restaurant> flags) {
-        this.flags = flags;
+        flags.clear();
+        for (Restaurant r : flags) {
+            addFlag(r);
+        }
     }
 
-    public void addFlag(Restaurant restaurant) {
-        this.flags.add(restaurant);
-    }
-
-    public void removeFlag(Restaurant restaurant) {
-        this.flags.remove(restaurant);
-    }
 }

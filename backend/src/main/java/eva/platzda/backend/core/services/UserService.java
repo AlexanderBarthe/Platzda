@@ -55,8 +55,12 @@ public class UserService {
      * @param user User with updated information
      * @return Saved User
      */
-    public User saveUser(User user) {
+    public User createUser(User user) {
         user.setId(null);
+        return userRepository.save(user);
+    }
+
+    public User saveUser(User user) {
         return userRepository.save(user);
     }
 
@@ -105,10 +109,10 @@ public class UserService {
         Restaurant restaurant = restaurantService.findById(restaurantId);
 
         if(user == null) {
-            throw new NotFoundException("User wit id " + userId + " not found");
+            throw new NotFoundException("User with id " + userId + " not found");
         }
         if(restaurant == null) {
-            throw new NotFoundException("Restaurant wit id " + restaurantId + " not found");
+            throw new NotFoundException("Restaurant with id " + restaurantId + " not found");
         }
 
         user.addFlag(restaurant);
@@ -129,10 +133,10 @@ public class UserService {
         Restaurant restaurant = restaurantService.findById(restaurantId);
 
         if(user == null) {
-            throw new NotFoundException("User wit id " + userId + " not found");
+            throw new NotFoundException("User with id " + userId + " not found");
         }
         if(restaurant == null) {
-            throw new NotFoundException("Restaurant wit id " + restaurantId + " not found");
+            throw new NotFoundException("Restaurant with id " + restaurantId + " not found");
         }
 
         user.removeFlag(restaurant);

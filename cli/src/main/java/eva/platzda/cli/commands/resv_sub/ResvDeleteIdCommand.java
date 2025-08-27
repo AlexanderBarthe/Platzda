@@ -11,7 +11,7 @@ public class ResvDeleteIdCommand implements ConsoleCommand {
 
     @Override
     public String executeCommand(String[] args) {
-        if(args.length == 0){
+        if(args.length < 1){
             throw new IllegalArgumentException("Not enough arguments provided. See 'help resv' for more information.");
         }
 

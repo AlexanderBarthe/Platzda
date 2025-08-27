@@ -2,11 +2,14 @@ package eva.platzda.backend.core.controllers;
 
 import eva.platzda.backend.core.dtos.ReservationDto;
 import eva.platzda.backend.core.dtos.TimeWindow;
+import eva.platzda.backend.core.models.OpeningHours;
 import eva.platzda.backend.core.models.Reservation;
+import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.services.HoursService;
 import eva.platzda.backend.core.services.ReservationService;
 import eva.platzda.backend.core.services.RestaurantService;
 import eva.platzda.backend.core.services.UserService;
+import eva.platzda.backend.error_handling.NotFoundException;
 import eva.platzda.backend.error_handling.TooManyBookingsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -81,7 +84,10 @@ public class ReservationController {
             @PathVariable Long restaurantId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate day) {
 
-        List<Reservation> reservation = reservationService.findReservationsForRestaurant(restaurantService.findById(restaurantId), day);
+        Restaurant restaurant = restaurantService.findById(restaurantId);
+        if(restaurant == null) throw new NotFoundException("Restaurant with id " + restaurantId + " not found");
+
+        List<Reservation> reservation = reservationService.findReservationsForRestaurant(restaurant, day);
 
         List<ReservationDto> dtos = reservation.stream()
                 .map(ReservationDto::fromObject)
@@ -129,8 +135,17 @@ public class ReservationController {
     public ResponseEntity<List<TimeWindow>> getFreeSlots(@PathVariable Long restaurantId,
                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate day,
                                          @RequestParam int guests) {
-        LocalTime open = hoursService.findByWeekday(day.getDayOfWeek().getValue(), restaurantId).getFirst().getOpeningTime();
-        LocalTime close = hoursService.findByWeekday(day.getDayOfWeek().getValue(), restaurantId).getLast().getClosingTime();
+
+        Restaurant restaurant = restaurantService.findById(restaurantId);
+        if(restaurant == null) throw new NotFoundException("Restaurant with id " + restaurantId + " not found");
+
+        List<OpeningHours> openingHours = hoursService.findByWeekday(day.getDayOfWeek().getValue(), restaurantId);
+
+        if(openingHours == null || openingHours.isEmpty()) return ResponseEntity.ok(List.of());
+
+        LocalTime open = openingHours.getFirst().getOpeningTime();
+        LocalTime close = openingHours.getLast().getClosingTime();
+
         return ResponseEntity.ok(reservationService.findFreeSlots(restaurantId, day, open, close, guests));
     }
 
@@ -142,7 +157,11 @@ public class ReservationController {
      */
     @DeleteMapping("/id/{reservationId}")
     public ResponseEntity<String> deleteReservationId(@PathVariable Long reservationId) {
-        reservationService.deleteReservation(reservationService.findById(reservationId));
+        Reservation reservation = reservationService.findById(reservationId);
+
+        if(reservation == null) return ResponseEntity.noContent().build();
+
+        reservationService.deleteReservation(reservation);
         return ResponseEntity.ok("Reservation deleted succesfully");
     }
 

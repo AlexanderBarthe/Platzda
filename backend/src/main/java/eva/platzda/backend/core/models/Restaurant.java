@@ -6,7 +6,9 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "restaurant")
@@ -27,6 +29,8 @@ public class Restaurant {
     @Column
     private Integer timeSlotDuration; //Wert * 15 min = gesamte Reservierungszeit
 
+    @OneToMany(mappedBy = "restaurant", orphanRemoval = true)
+    private List<UserFlag> flags = new ArrayList<>();
 
     public Restaurant() {
     }
@@ -91,6 +95,19 @@ public class Restaurant {
 
     public void removeTag(String tag) {
         this.tags.remove(tag);
+    }
+
+    public List<UserFlag> getFlags() {
+        return flags;
+    }
+    public void setFlags(List<UserFlag> flags) {
+        this.flags = flags;
+    }
+    public void addFlag(UserFlag flag) {
+        this.flags.add(flag);
+    }
+    public void removeFlag(UserFlag flag) {
+        this.flags.remove(flag);
     }
 
 

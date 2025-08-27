@@ -27,7 +27,7 @@ public class ResvCreateCommand implements ConsoleCommand {
 
     @Override
     public String executeCommand(String[] args) {
-        if(args.length == 0) {
+        if(args.length < 4) {
             return "Not enough arguments provided. See 'help resv' for more information.";
         }
 

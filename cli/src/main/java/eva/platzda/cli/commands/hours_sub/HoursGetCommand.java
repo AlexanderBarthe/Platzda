@@ -11,7 +11,7 @@ public class HoursGetCommand implements ConsoleCommand {
 
     @Override
     public String executeCommand(String[] args) {
-        if(args.length == 0){
+        if(args.length < 1){
             return "Not enough arguments provided. See 'help hours' for more information.";
         }
 

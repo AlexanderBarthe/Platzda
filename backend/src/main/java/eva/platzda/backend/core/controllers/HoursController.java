@@ -45,7 +45,7 @@ public class HoursController {
         Restaurant restaurant = restaurantService.findById(restaurantId);
 
         if(restaurant == null) {
-            throw new NotFoundException("Restaurant wit id " + restaurantId + " does not exist");
+            throw new NotFoundException("Restaurant with id " + restaurantId + " does not exist");
         }
 
         List<OpeningHours> hours = hoursService.findByRestaurantId(restaurantId);
@@ -77,7 +77,7 @@ public class HoursController {
         Restaurant restaurant = restaurantService.findById(restaurantId);
 
         if(restaurant == null) {
-            throw new NotFoundException("Restaurant wit id " + restaurantId + " does not exist");
+            throw new NotFoundException("Restaurant with id " + restaurantId + " does not exist");
         }
 
         OpeningHours hours = new OpeningHours();
@@ -107,9 +107,7 @@ public class HoursController {
 
         OpeningHours oldHours = hoursService.findById(newHours.getId());
 
-        if(oldHours == null) {
-            throw new NotFoundException("OpeningHours of restaurant with id " + newHours.getId() + " does not exist");
-        }
+        if(oldHours == null) throw new NotFoundException("OpeningHours with id " + newHours.getId() + " do not exist");
 
         if(newHours.getOpeningTime() != null) oldHours.setOpeningTime(newHours.getOpeningTime());
         if(newHours.getClosingTime() != null) oldHours.setClosingTime(newHours.getClosingTime());

@@ -67,7 +67,7 @@ public class HelpCommand implements ConsoleCommand {
                 Map<String, String> manualDescriptions = new LinkedHashMap<>();
                 manualDescriptions.put("create <restaurant_id> <user_id> <LocalDateTime: start> <guest_count>", "Creates a reservation.");
                 manualDescriptions.put("delete-id <reservation_id>", "Deletes the reservation with given id.");
-                manualDescriptions.put("delete-user <user_id>", "Deletes all reservations of a user.");
+                manualDescriptions.put("delete-user <user_id> <date>", "Deletes all reservations of a user on one day.");
                 manualDescriptions.put("get <restaurant_id> <date>", "Shows all reservations for a day in a restaurant.");
                 manualDescriptions.put("drop", "Deletes all reservation.");
                 manualDescriptions.put("get-slots <restaurant_id> <date> <guest_count>", "Shows all available timeslots for a restaurant.");
@@ -78,7 +78,7 @@ public class HelpCommand implements ConsoleCommand {
                 manualDescriptions.put("create <restaurant_id> <weekday> <opening_time> <closing_time>", "Creates the opening hours for a specific weekday and restaurant. " +
                         "Weekday should be an int where 1 represents monday and 7 sunday.");
                 manualDescriptions.put("get <restaurant_id>", "Shows the opening times for a restaurant.");
-                manualDescriptions.put("update <hours_id> <restaurant_id> <weekday> <opening-time> <closing-time>", "Updates the opening times of a restaurant.");
+                manualDescriptions.put("update <hours_id> <opening-time> <closing-time>", "Updates the opening times of a restaurant.");
                 manualDescriptions.put("delete <hours_id>", "Deletes an opening time.");
                 manualDescriptions.put("delte-restaurant <restaurant_id>", "Deletes all opening hours for a restaurant.");
                 manualDescriptions.put("drop", "Deletes all opening hours.");
@@ -88,7 +88,7 @@ public class HelpCommand implements ConsoleCommand {
                 Map<String, String> manualDescriptions = new LinkedHashMap<>();
                 manualDescriptions.put("create <restaurant_id> <size>", "Creates a table.");
                 manualDescriptions.put("get <restaurant_id>", "Shows all the tables in a restaurant.");
-                manualDescriptions.put("update <table_id> <restaurant_id> <size>", "Updates a table.");
+                manualDescriptions.put("update <table_id> <size>", "Updates a table.");
                 manualDescriptions.put("delete <table_id>", "Deletes a table.");
                 manualDescriptions.put("delete-restaurant <restaurant_id>", "Deletes all tables in a restaurant.");
                 manualDescriptions.put("drop", "Deletes all tables.");

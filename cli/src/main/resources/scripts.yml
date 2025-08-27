@@ -2,7 +2,7 @@ scripts:
   hello:
     - await notification_restaurant 2
     - help
-  rate50-test:
+  rate50:
     - user --silent create A
     - log --silent flush
     - time --silent --flush
@@ -14,7 +14,7 @@ scripts:
     - time --max
     - log max-time
     - time --silent --flush
-  notification-test:
+  notification:
     - resv --silent drop
     - resv --silent unsub all
     - resv --silent create --no-notification 1 1 2025-10-01T14:00:00 1
@@ -23,7 +23,7 @@ scripts:
   notification-test-helper:
     - await notification_reservation 1
     - resv delete-id 1
-  mass-reservations-test:
+  mass-reservations:
     - user --silent drop
     - rest --silent drop
     - table --silent drop
@@ -38,10 +38,92 @@ scripts:
     - run --silent 1000 --mt resv create --no-notification 1 [x+1] 2025-10-01T10:00:00 1
     - log --count success
     - log --count client-error
-  correctness-test:
+  correctness:
+    - log flush
     - user drop
     - rest drop
     - table drop
     - resv drop
     - hours drop
-    - log flush
+    - user create ExampleName;example@email.com
+    - user edit 1 name Horst
+    - user edit 1 wrongargument Horst
+    - user edit 2 name Horst
+    - user get 1
+    - user get 2
+    - user list
+    - user create D
+    - user delete 2
+    - user delete 2
+    - rest create 1
+    - rest edit 1 address Dingensstraße 3
+    - rest edit 1 wrongargument D
+    - rest edit 2 address Dingensstraße 3
+    - rest get 1
+    - rest get 2
+    - rest tag 1 Italienisch
+    - rest create 1
+    - rest tag 2 Griechisch
+    - rest search Italienisch
+    - rest list
+    - rest untag 1 Italienisch
+    - rest search Italienisch
+    - rest sub 1
+    - rest sub 2
+    - rest get-subs
+    - rest unsub 2
+    - user flag 1 1
+    - user flag 1 2
+    - rest delete 2
+    - rest delete 2
+    - run 50 --rate 25 --mt user --silent create A
+    - table create 1 -1
+    - table create 1 4
+    - table get 1
+    - table create 1 16
+    - table update 2 8
+    - table update 99 1
+    - table update 1 -1
+    - table delete 2
+    - table delete 2
+    - table delete-restaurant 99
+    - table create 2 2
+    - table delete-restaurant 2
+    - hours create 1 2 10:00:00 22:00:00
+    - hours create 99 2 10:00:00 22:00:00
+    - hours create 1 9 10:00:00 22:00:00
+    - hours create 1 2 10:00:00 02:00:00
+    - hours create 1 3 11:00:00 22:00:00
+    - hours update 2 10:00:00 22:00:00
+    - hours get 1
+    - hours delete 2
+    - hours delete 99
+    - hours delete-restaurant 2
+    - hours delete-restaurant 99
+    - resv get-slots 1 2025-10-07 4
+    - resv get-slots 1 2025-10-07 5
+    - resv get-slots 99 2025-10-07 4
+    - resv get-slots 1 2025-10-06 4
+    - resv create 1 1 2025-10-07T12:00:00 4
+    - resv create 1 2 2025-10-07T12:00:00 4
+    - resv create 2 1 2025-10-07T12:00:00 4
+    - resv create 1 1 2025-10-07T19:00:00 4
+    - resv create 1 1 2025-10-07T19:00:00 9
+    - resv get 1 2025-10-07
+    - resv get 2 2025-10-07
+    - resv get 1 2025-10-06
+    - resv sub 1
+    - resv sub 99
+    - resv get-subs
+    - resv unsub 1
+    - resv unsub 99
+    - resv unsub all
+    - resv delete-id 1
+    - resv delete-id 99
+    - resv create 1 1 2025-10-07T12:00:00 4
+    - resv delete-user 1 2025-10-07
+    - resv delete-user 99 2025-10-07
+    - resv delete-user 1 2025-10-06
+    - log --count success
+    - log --count client-error
+    - log --count server-error

@@ -11,11 +11,10 @@ public class TableUpdateCommand implements ConsoleCommand {
 
     @Override
     public String executeCommand(String[] args) {
-        if(args.length == 0){
+        if(args.length < 2){
             return "Not enough arguments provided. See 'help table' for more information.";
         }
         Long tableId;
-        Long restaurantId;
         int size;
         try {
             tableId = Long.parseLong(args[0]);
@@ -23,18 +22,12 @@ public class TableUpdateCommand implements ConsoleCommand {
             throw new IllegalArgumentException("Invalid table id.");
         }
         try {
-            restaurantId = Long.parseLong(args[1]);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid restaurant id.");
-        }
-        try {
-            size = Integer.parseInt(args[2]);
+            size = Integer.parseInt(args[1]);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid size.");
         }
 
         String json = "{\"id\": " + tableId +","+
-                "\"restaurantId\":" + restaurantId + ","+
                 "\"size\":" + size +
                 "}";
 

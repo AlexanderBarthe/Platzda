@@ -13,7 +13,7 @@ public class ResvGetSlotsCommand implements ConsoleCommand {
 
     @Override
     public String executeCommand(String[] args) {
-        if(args.length == 0){
+        if(args.length < 3){
             throw new IllegalArgumentException("Not enough arguments provided. See 'help resv' for more information.");
         }
 

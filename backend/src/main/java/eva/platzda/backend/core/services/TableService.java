@@ -56,7 +56,7 @@ public class TableService {
      * @return RestaurantTable entity
      * @throws RuntimeException if no table is found with the given ID
      */
-    public RestaurantTable findById(Long id) {return tableRepository.findById(id).orElseThrow(() -> new RuntimeException("Table not found with id " + id));}
+    public RestaurantTable findById(Long id) {return tableRepository.findById(id).orElse(null);}
 
 
     /**
@@ -68,10 +68,11 @@ public class TableService {
     @Transactional
     public RestaurantTable createTable(RestaurantTable table) {
         table.setId(null);
+        RestaurantTable created = tableRepository.save(table);
         for (int i = 0; i <= timeslotGenerationService.getPregeneratedWeeks()*7; i++){
-            timeslotGenerationService.connectTimeslotsTable(LocalDate.now().plusDays(i), table);
+            timeslotGenerationService.connectTimeslotsTable(LocalDate.now().plusDays(i), created);
         }
-        return tableRepository.save(table);
+        return created;
     }
 
     /**

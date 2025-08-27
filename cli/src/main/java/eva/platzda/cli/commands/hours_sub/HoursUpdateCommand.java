@@ -13,12 +13,10 @@ public class HoursUpdateCommand implements ConsoleCommand {
 
     @Override
     public String executeCommand(String[] args) {
-        if(args.length == 0){
+        if(args.length < 3){
             return "Not enough arguments provided. See 'help hours' for more information.";
         }
         Long id;
-        Long restaurantId;
-        int weekday;
         LocalTime openingTime;
         LocalTime closingTime;
 
@@ -28,32 +26,20 @@ public class HoursUpdateCommand implements ConsoleCommand {
             throw new IllegalArgumentException("Invalid hours id.");
         }
         try {
-            restaurantId = Long.parseLong(args[1]);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid restaurant id.");
-        }
-        try {
-            weekday = Integer.parseInt(args[2]);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid weekday.");
-        }
-        try {
-            openingTime = LocalTime.parse(args[3]);
+            openingTime = LocalTime.parse(args[1]);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid opening Time.");
         }
         try {
-            closingTime = LocalTime.parse(args[4]);
+            closingTime = LocalTime.parse(args[2]);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid closing Time.");
         }
 
         String json = "{\"id\":" + id + ","+
-                "\"restaurantId\":" + restaurantId + ","+
-                "\"weekday\":" + weekday + ","+
-                "\"openingTime\"" + openingTime + ","+
-                "\"closingTime\":" + closingTime +
+                "\"openingTime\":\"" + openingTime + "\","+
+                "\"closingTime\":\"" + closingTime + "\"" +
                 "}";
-        return RestClient.sendRequest("hours/"+restaurantId, HttpMethod.PUT, json);
+        return RestClient.sendRequest("hours", HttpMethod.PUT, json);
     }
 }

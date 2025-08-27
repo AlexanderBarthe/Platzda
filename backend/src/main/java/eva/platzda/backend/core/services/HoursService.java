@@ -4,15 +4,18 @@ package eva.platzda.backend.core.services;
 import eva.platzda.backend.core.models.OpeningHours;
 import eva.platzda.backend.core.models.Reservation;
 import eva.platzda.backend.core.models.Restaurant;
+import eva.platzda.backend.core.models.RestaurantTable;
 import eva.platzda.backend.core.repositories.HoursRepository;
 import eva.platzda.backend.core.repositories.RestaurantRepository;
 import eva.platzda.backend.core.repositories.TimeslotRepository;
+import eva.platzda.backend.error_handling.NotFoundException;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,12 +30,15 @@ public class HoursService {
 
     private final HoursRepository hoursRepository;
 
+    private final RestaurantRepository restaurantRepository;
+
     private final EntityManager em;
     private final TimeslotRepository timeslotRepository;
 
     @Autowired
-    public HoursService(HoursRepository hoursRepository, TimeslotGenerationService timeslotGenerationService, EntityManager em, TimeslotRepository timeslotRepository) {
+    public HoursService(HoursRepository hoursRepository, RestaurantRepository restaurantRepository, TimeslotGenerationService timeslotGenerationService, EntityManager em, TimeslotRepository timeslotRepository) {
         this.hoursRepository = hoursRepository;
+        this.restaurantRepository = restaurantRepository;
         this.timeslotGenerationService = timeslotGenerationService;
         this.em = em;
         this.timeslotRepository = timeslotRepository;
@@ -45,7 +51,12 @@ public class HoursService {
      * @param restaurantId ID of the restaurant
      * @return List of opening hours for the specified weekday and restaurant
      */
-    public List<OpeningHours> findByWeekday(int weekday, Long restaurantId) {return hoursRepository.findByWeekday(weekday, restaurantId);}
+    public List<OpeningHours> findByWeekday(int weekday, Long restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId).orElse(null);
+        if(restaurant == null) throw new NotFoundException("Restaurant with id " + restaurantId + " not found");
+
+        return hoursRepository.findByWeekday(weekday, restaurantId);
+    }
 
     /**
      * Returns all opening hours in the system.
@@ -69,7 +80,7 @@ public class HoursService {
      * @return The OpeningHours entity
      * @throws RuntimeException if no entry is found
      */
-    public OpeningHours findById(Long Id) {return hoursRepository.findById(Id).orElseThrow(() -> new RuntimeException("OpeningHours not found with id " + Id));}
+    public OpeningHours findById(Long Id) {return hoursRepository.findById(Id).orElse(null);}
 
     /**
      * Creates a new opening hours entry.
@@ -109,7 +120,9 @@ public class HoursService {
      */
     @Transactional
     public void deleteOpeningHoursById(Long id) {
-        Restaurant restaurant = hoursRepository.findById(id).get().getRestaurant();
+        OpeningHours hours = hoursRepository.findById(id).orElse(null);
+        if(hours == null) throw new NotFoundException("Hours with id " + id + " not found");
+        Restaurant restaurant = hours.getRestaurant();
 
         hoursRepository.deleteById(id);
         timeslotGenerationService.updateTimeslots(restaurant);
@@ -122,7 +135,9 @@ public class HoursService {
      */
     @Transactional
     public void deleteOpeningHoursOfRestaurant(Long restaurantId) {
-        Restaurant restaurant = hoursRepository.findById(restaurantId).get().getRestaurant();
+        Restaurant restaurant = restaurantRepository.findById(restaurantId).orElse(null);
+        if (restaurant == null) throw new NotFoundException("Restaurant with id " + restaurantId + " not found");
+
         hoursRepository.deleteByRestaurantId(restaurantId);
         timeslotGenerationService.updateTimeslots(restaurant);
     }

@@ -13,7 +13,7 @@ public class ResvGetRestCommand implements ConsoleCommand {
 
     @Override
     public String executeCommand(String[] args) {
-        if(args.length == 0){
+        if(args.length < 2){
             throw new IllegalArgumentException("Not enough arguments provided. See 'help resv' for more information.");
         }
         Long restaurantId;

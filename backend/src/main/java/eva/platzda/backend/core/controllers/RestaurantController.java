@@ -54,7 +54,7 @@ public class RestaurantController {
         Restaurant restaurant = restaurantService.findById(id);
 
         if(restaurant == null) {
-            throw new NotFoundException("Restaurant wit id " + id + " does not exist");
+            throw new NotFoundException("Restaurant with id " + id + " does not exist");
         }
 
         return ResponseEntity.ok(RestaurantDto.fromObject(restaurant));
@@ -115,10 +115,10 @@ public class RestaurantController {
     public ResponseEntity<RestaurantDto> updateOwner(@PathVariable Long restaurantId, @PathVariable Long ownerId) {
 
         Restaurant restaurant = restaurantService.findById(restaurantId);
-        if(restaurant == null) throw new NotFoundException("Restaurant wit id " + restaurantId + " does not exist");
+        if(restaurant == null) throw new NotFoundException("Restaurant with id " + restaurantId + " does not exist");
 
         User newOwner = userService.findById(ownerId);
-        if(newOwner == null) throw new NotFoundException("User wit id " + ownerId + " does not exist");
+        if(newOwner == null) throw new NotFoundException("User with id " + ownerId + " does not exist");
 
         restaurant.setOwner(newOwner);
 
@@ -137,7 +137,7 @@ public class RestaurantController {
     @PutMapping()
     public ResponseEntity<RestaurantDto> updateRestaurant(@RequestBody Restaurant restaurant) {
         Restaurant oldRestaurant = restaurantService.findById(restaurant.getId());
-        if(oldRestaurant == null) throw new NotFoundException("Restaurant wit id " + restaurant.getId() + " does not exist");
+        if(oldRestaurant == null) throw new NotFoundException("Restaurant with id " + restaurant.getId() + " does not exist");
 
         if(restaurant.getAddress() == null) restaurant.setAddress(oldRestaurant.getAddress());
         if(restaurant.getTimeSlotDuration() == null) restaurant.setTimeSlotDuration(oldRestaurant.getTimeSlotDuration());
@@ -183,7 +183,7 @@ public class RestaurantController {
     @PutMapping("{restaurantId}/tag")
     public ResponseEntity<RestaurantDto> addTag(@PathVariable Long restaurantId, @RequestBody StringRequest request) {
         Restaurant restaurant = restaurantService.findById(restaurantId);
-        if(restaurant == null) throw new NotFoundException("Restaurant wit id " + restaurantId + " does not exist");
+        if(restaurant == null) throw new NotFoundException("Restaurant with id " + restaurantId + " does not exist");
 
         restaurant.addTag(request.getString());
         Restaurant r = restaurantService.updateRestaurant(restaurant);
@@ -202,7 +202,7 @@ public class RestaurantController {
     @PutMapping("{restaurantId}/untag")
     public ResponseEntity<RestaurantDto> deleteTag(@PathVariable Long restaurantId, @RequestBody StringRequest request) {
         Restaurant restaurant = restaurantService.findById(restaurantId);
-        if(restaurant == null) throw new NotFoundException("Restaurant wit id " + restaurantId + " does not exist");
+        if(restaurant == null) throw new NotFoundException("Restaurant with id " + restaurantId + " does not exist");
 
         restaurant.removeTag(request.getString());
         Restaurant r = restaurantService.updateRestaurant(restaurant);

@@ -6,6 +6,7 @@ import eva.platzda.backend.core.models.*;
 import eva.platzda.backend.core.notifications.NotificationSocket;
 import eva.platzda.backend.core.repositories.*;
 import eva.platzda.backend.error_handling.NotEnoughCapacityException;
+import eva.platzda.backend.error_handling.NotFoundException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -132,6 +133,11 @@ public class ReservationService {
                                           LocalTime open,
                                           LocalTime close,
                                           int guests) {
+
+        if(open == null || close == null) {
+            return Collections.emptyList();
+        }
+
         LocalDateTime dayStart = day.atTime(open);
         LocalDateTime dayEnd = day.atTime(close);
 
@@ -293,11 +299,14 @@ public class ReservationService {
      * @return List of reservations
      */
     public List<Reservation> findReservationsForRestaurant(Restaurant restaurant, LocalDate date) {
-        LocalDateTime dayStart = date.atTime(
-                hoursRepository.findByWeekday(date.getDayOfWeek().getValue(), restaurant.getId()).getFirst().getOpeningTime());
 
-        LocalDateTime dayEnd = date.atTime(
-                hoursRepository.findByWeekday(date.getDayOfWeek().getValue(), restaurant.getId()).getLast().getClosingTime());
+        if(restaurant == null) throw new NotFoundException("Restaurant not found");
+
+        List<OpeningHours> openingHours = hoursRepository.findByWeekday(date.getDayOfWeek().getValue(), restaurant.getId());
+        if(openingHours == null || openingHours.isEmpty()) return Collections.emptyList();
+
+        LocalDateTime dayStart = date.atTime(openingHours.getFirst().getOpeningTime());
+        LocalDateTime dayEnd = date.atTime(openingHours.getLast().getClosingTime());
 
         return reservationRepository.findReservationsForRestaurant(restaurant.getId(), dayStart, dayEnd);
     }
@@ -347,7 +356,7 @@ public class ReservationService {
      * @return Reservation entity
      */
     public Reservation findById(Long reservationId) {
-        return reservationRepository.findById(reservationId).get();
+        return reservationRepository.findById(reservationId).orElse(null);
     }
 
 

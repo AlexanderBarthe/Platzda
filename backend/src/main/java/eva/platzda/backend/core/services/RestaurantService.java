@@ -43,7 +43,7 @@ public class RestaurantService {
      * @return Restaurant entity or null if not found
      */
     public Restaurant findById(Long id) {
-        return restaurantRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+        return restaurantRepository.findById(id).orElse(null);
     }
 
 

@@ -49,7 +49,7 @@ public class UserController {
         User user = userService.findById(id);
 
         if(user == null) {
-            throw new NotFoundException("User wit id " + id + " does not exist");
+            throw new NotFoundException("User with id " + id + " does not exist");
         }
         return ResponseEntity.ok(UserDto.fromObject(user));
     }
@@ -63,7 +63,7 @@ public class UserController {
      */
     @PostMapping
     public ResponseEntity<UserDto> create(@RequestBody User user) {
-        User u = userService.saveUser(user);
+        User u = userService.createUser(user);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(UserDto.fromObject(u));
     }
@@ -78,7 +78,7 @@ public class UserController {
     @PutMapping
     public ResponseEntity<UserDto> update(@RequestBody User user) {
         User oldUser = userService.findById(user.getId());
-        if(oldUser == null) throw new NotFoundException("User wit id " + user.getId() + " does not exist");
+        if(oldUser == null) throw new NotFoundException("User with id " + user.getId() + " does not exist");
 
         if(user.getName() == null) user.setName(oldUser.getName());
         if(user.getEmail() == null) user.setEmail(oldUser.getEmail());

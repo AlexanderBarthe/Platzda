@@ -6,7 +6,9 @@ import eva.platzda.backend.core.models.Restaurant;
 import eva.platzda.backend.core.models.RestaurantTable;
 import eva.platzda.backend.core.services.RestaurantService;
 import eva.platzda.backend.core.services.TableService;
+import eva.platzda.backend.error_handling.BadRequestBodyException;
 import eva.platzda.backend.error_handling.NotFoundException;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,11 +60,14 @@ public class TableController {
     public ResponseEntity<TableDto> createTable(@PathVariable Long restaurantId, @RequestBody TableDto creationRequestObject) {
         Restaurant restaurant = restaurantService.findById(restaurantId);
 
-        if (restaurant == null) throw new NotFoundException("Restaurant with id" + restaurantId + " does not exist");
+        if (restaurant == null) throw new NotFoundException("Restaurant with id " + restaurantId + " does not exist");
 
         RestaurantTable restaurantTable = new RestaurantTable();
 
         restaurantTable.setRestaurant(restaurant);
+
+        if(creationRequestObject == null || creationRequestObject.getSize() < 1) throw new BadRequestBodyException("Size of table must be >= 1");
+
         restaurantTable.setSize(creationRequestObject.getSize());
 
         RestaurantTable saved = tableService.createTable(restaurantTable);
@@ -81,7 +86,9 @@ public class TableController {
     public ResponseEntity<TableDto> updateTable(@PathVariable Long tableId, @RequestBody TableDto table) {
         RestaurantTable oldTable = tableService.findById(tableId);
 
-        if(oldTable == null) throw new NotFoundException("Table with id" + tableId + " does not exist");
+        if(oldTable == null) throw new NotFoundException("Table with id " + tableId + " does not exist");
+
+        if(table.getSize() < 1) throw new BadRequestBodyException("Size of table must be >= 1");
 
         oldTable.setSize(table.getSize());
         RestaurantTable saved = tableService.updateTable(oldTable);
